@@ -1,13 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#if WINDOWS
+using System;
 using System.IO;
-using System.Text;
 
 namespace QingYi.Core.FileUtility
 {
-#if WINDOWS
+    /// <summary>
+    /// 提供显示和隐藏文件及文件夹的方法。
+    /// </summary>
     public struct ShowHide
     {
+        /// <summary>
+        /// 显示指定文件。
+        /// </summary>
+        /// <param name="filePath">要显示的文件路径。</param>
+        /// <exception cref="Exception">如果文件不存在或文件已显示，抛出异常。</exception>
+        /// <remarks>该方法会检查文件是否存在，并确保文件未被隐藏。如果文件已显示，则会抛出异常。</remarks>
         public static void ShowFile(string filePath)
         {
             try
@@ -36,6 +43,12 @@ namespace QingYi.Core.FileUtility
             }
         }
 
+        /// <summary>
+        /// 隐藏指定文件。
+        /// </summary>
+        /// <param name="filePath">要隐藏的文件路径。</param>
+        /// <exception cref="Exception">如果文件不存在或文件已隐藏，抛出异常。</exception>
+        /// <remarks>该方法会检查文件是否存在，并确保文件未被隐藏。如果文件已隐藏，则会抛出异常。</remarks>
         public static void HideFile(string filePath)
         {
             try
@@ -64,7 +77,12 @@ namespace QingYi.Core.FileUtility
             }
         }
 
-        // 显示文件夹的函数
+        /// <summary>
+        /// 显示指定文件夹。
+        /// </summary>
+        /// <param name="folderPath">要显示的文件夹路径。</param>
+        /// <exception cref="Exception">如果文件夹不存在或文件夹已显示，抛出异常。</exception>
+        /// <remarks>该方法会检查文件夹是否存在，并确保文件夹未被隐藏。如果文件夹已显示，则会抛出异常。</remarks>
         public static void ShowFolder(string folderPath)
         {
             try
@@ -75,10 +93,8 @@ namespace QingYi.Core.FileUtility
                 }
                 else
                 {
-                    // 获取文件夹的当前属性
                     FileAttributes attributes = File.GetAttributes(folderPath);
 
-                    // 如果文件夹是隐藏的，则显示它
                     switch (attributes & FileAttributes.Hidden)
                     {
                         case FileAttributes.Hidden:
@@ -95,7 +111,12 @@ namespace QingYi.Core.FileUtility
             }
         }
 
-        // 隐藏文件夹的函数
+        /// <summary>
+        /// 隐藏指定文件夹。
+        /// </summary>
+        /// <param name="folderPath">要隐藏的文件夹路径。</param>
+        /// <exception cref="Exception">如果文件夹不存在或文件夹已隐藏，抛出异常。</exception>
+        /// <remarks>该方法会检查文件夹是否存在，并确保文件夹未被隐藏。如果文件夹已隐藏，则会抛出异常。</remarks>
         public static void HideFolder(string folderPath)
         {
             try
@@ -106,16 +127,13 @@ namespace QingYi.Core.FileUtility
                 }
                 else
                 {
-                    // 获取文件夹的当前属性
                     FileAttributes attributes = File.GetAttributes(folderPath);
 
-                    // 如果文件夹是隐藏的，则无需更改
                     switch (attributes & FileAttributes.Hidden)
                     {
                         case FileAttributes.Hidden:
                             throw new Exception("The folder is already hidden.");
                         default:
-                            // 否则，将文件夹设置为隐藏
                             File.SetAttributes(folderPath, attributes | FileAttributes.Hidden);
                             break;
                     }
@@ -127,5 +145,5 @@ namespace QingYi.Core.FileUtility
             }
         }
     }
-#endif
 }
+#endif
