@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace GetFileInfo
+namespace QingYi.Core.FileUtility.GetFileInfo
 {
     internal class Select
     {

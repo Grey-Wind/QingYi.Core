@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Folder.SavedGames
+namespace QingYi.Core.FileUtility.SavedGames
 {
     public class GetSavedGamesFolder
     {

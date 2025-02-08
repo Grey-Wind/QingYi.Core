@@ -1,6 +1,6 @@
-﻿namespace GetFileInfo
+﻿namespace QingYi.Core.FileUtility.GetFileInfo
 {
-    public class FileName
+    public class FileExtension
     {
         public static string Get(string filePath)
         {
@@ -8,9 +8,9 @@
 
             var result = select.SelectFile(filePath);
 
-            string fileName = result.Item1;
+            string fileExtension = result.Item2;
 
-            return fileName;
+            return fileExtension;
         }
     }
 }

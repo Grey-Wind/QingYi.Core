@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Folder.SavedGames
+namespace QingYi.Core.FileUtility.SavedGames
 {
     public class CreateFile
     {
@@ -13,7 +13,7 @@ namespace Folder.SavedGames
             try
             {
                 // 创建空文件
-                using (File.Create(newFilePath)) { } ;
+                using (File.Create(newFilePath)) { };
                 return newFilePath;
             }
             catch (Exception ex)

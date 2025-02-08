@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GetFileInfo
+namespace QingYi.Core.FileUtility.GetFileInfo
 {
     public class FileLastWriteTime
     {
