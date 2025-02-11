@@ -20,7 +20,7 @@ namespace QingYi.Core.FileUtility.UserProfile
         /// 获取已保存游戏目录的路径。
         /// </summary>
         /// <returns>The full path to the saved games directory.<br/>已保存游戏目录的完整路径。</returns>
-        public static string Get() => Path.Combine(Profile.userProfilePath, "Saved Games");
+        public static string Get() => Path.Combine(Profile.UserProfilePath, "Saved Games");
 
         /// <summary>
         /// Creates a new empty file with the specified name and returns the full path to the created file.<br/>
