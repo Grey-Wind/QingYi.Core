@@ -126,6 +126,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="FileUtility\UserProfile\AppData\" />
     <Folder Include="Shell\" />
   </ItemGroup>
 
