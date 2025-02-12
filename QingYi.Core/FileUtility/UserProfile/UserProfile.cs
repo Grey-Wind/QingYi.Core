@@ -4,6 +4,7 @@ using System.IO;
 namespace QingYi.Core.FileUtility.UserProfile
 {
     /// <summary>
+    /// <b>Windows Only!</b><br />
     /// Represents the profile paths for user and application data.<br />
     /// 表示用户和应用程序数据的配置文件路径。
     /// </summary>

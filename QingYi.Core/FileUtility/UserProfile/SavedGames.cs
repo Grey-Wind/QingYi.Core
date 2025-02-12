@@ -4,6 +4,7 @@ using System.IO;
 namespace QingYi.Core.FileUtility.UserProfile
 {
     /// <summary>
+    /// <b>Windows Only!</b><br />
     /// Provides functionality for managing saved games, including creating files and folders.<br/>
     /// 提供管理已保存游戏的功能，包括创建文件和文件夹。
     /// </summary>

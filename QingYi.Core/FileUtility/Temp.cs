@@ -1,9 +1,9 @@
-﻿#if WINDOWS
-using System.IO;
+﻿using System.IO;
 
 namespace QingYi.Core.FileUtility
 {
     /// <summary>
+    /// <b>Windows Only!</b><br />
     /// Operation class for the Temp folder.<br />
     /// 针对Temp文件夹的操作类。
     /// </summary>
@@ -13,7 +13,7 @@ namespace QingYi.Core.FileUtility
         /// Temp folder path.<br />
         /// Temp 文件夹路径。
         /// </summary>
-        public static string tempPath = Get();
+        public static string TempPath { get; }
 
         /// <summary>
         /// Get the Temp folder<br/>
@@ -65,6 +65,10 @@ namespace QingYi.Core.FileUtility
 
             return name;
         }
+
+        static Temp()
+        {
+            TempPath = Get();
+        }
     }
 }
-#endif
