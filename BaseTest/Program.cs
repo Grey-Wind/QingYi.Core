@@ -6,7 +6,6 @@ namespace BaseTest
     {
         static void Main(string[] args)
         {
-            string temp;
             string testText = "Hello World!";
 
             #region Start
@@ -26,9 +25,9 @@ namespace BaseTest
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Encode: ");
-            Console.Write($"{Base64.Encode(testText)}  ");
+            Console.Write($"{Base64.Encode(testText, Base64.TextEncoding.UTF8)}  ");
             Console.Write("Decode: ");
-            Console.Write($"{Base64.Decode(Base64.Encode(testText))}");
+            Console.Write($"{Base64.Decode(Base64.Encode(testText, Base64.TextEncoding.UTF8), Base64.TextEncoding.UTF8)}");
 
             // 恢复为默认颜色
             Console.ResetColor();
