@@ -4,22 +4,51 @@ using System.Text;
 
 #pragma warning disable CS0675, SYSLIB0001
 
-namespace QingYi.Core.String
+namespace QingYi.Core.String.Base
 {
 #if NET6_0_OR_GREATER
 
     /// <summary>
-    /// 适用于 .NET 6.0 及更高版本的 Base 64 编解码库
+    /// 适用于 .NET 6.0 及更高版本的 Base 64 编解码库。<br />
+    /// Base 64 codec library for.NET 6.0 and higher.
     /// </summary>
     public unsafe static class Base64
     {
+        /// <summary>
+        /// 文本编码格式。<br />
+        /// Text encoding.
+        /// </summary>
         public enum TextEncoding
         {
+            /// <summary>
+            /// UTF-8
+            /// </summary>
             UTF8,
+
+            /// <summary>
+            /// UTF-16 LE
+            /// </summary>
             UTF16LE,
+
+            /// <summary>
+            /// UTF-16 BE
+            /// </summary>
             UTF16BE,
+
+            /// <summary>
+            /// ASCII
+            /// </summary>
             ASCII,
+
+            /// <summary>
+            /// UTF-32
+            /// </summary>
             UTF32,
+
+            /// <summary>
+            /// UTF-7
+            /// </summary>
+            [Obsolete(message: "UTF-7 has been deprecated because it is obsolete.")]
             UTF7,
         }
 
@@ -60,21 +89,13 @@ namespace QingYi.Core.String
             Base64Inv['='] = 0;
         }
 
-        private static Encoding GetEncodingSafe(int codePage, string name)
-        {
-            try
-            {
-                return Encoding.GetEncoding(codePage);
-            }
-            catch (ArgumentException)
-            {
-                throw new InvalidOperationException(
-                    $"需要注册 {name} 编码支持，请确认已执行以下操作：\n" +
-                    "1. 安装 NuGet 包: Install-Package System.Text.Encoding.CodePages\n" +
-                    "2. 在程序启动时调用: Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)");
-            }
-        }
-
+        /// <summary>
+        /// 将字符串进行 Base 64 编码。<br />
+        /// Base 64 encoding of the string.
+        /// </summary>
+        /// <param name="input">输入文本<br />Input text</param>
+        /// <param name="encoding">字符编码标准<br />Character coding standard</param>
+        /// <returns>被编码的字符串<br />Encoded string</returns>
         public static string Encode(string input, TextEncoding encoding = TextEncoding.UTF8)
         {
             if (string.IsNullOrEmpty(input)) return string.Empty;
@@ -83,6 +104,13 @@ namespace QingYi.Core.String
             return BytesToBase64(bytes);
         }
 
+        /// <summary>
+        /// 将字符串进行 Base 64 编码。<br />
+        /// Base 64 decoding of the string.
+        /// </summary>
+        /// <param name="base64">输入文本<br />Input text</param>
+        /// <param name="encoding">字符编码标准<br />Character coding standard</param>
+        /// <returns>被解码的字符串<br />Decoded string</returns>
         public static string Decode(string base64, TextEncoding encoding = TextEncoding.UTF8)
         {
             if (string.IsNullOrEmpty(base64)) return string.Empty;
@@ -137,27 +165,27 @@ namespace QingYi.Core.String
 
                 for (int i = 0; i < wholeBlocks; i++)
                 {
-                    uint triple = (uint)(*src++) << 16;
-                    triple |= (uint)(*src++) << 8;
+                    uint triple = (uint)*src++ << 16;
+                    triple |= (uint)*src++ << 8;
                     triple |= *src++;
 
-                    *dest++ = base64Ptr[(triple >> 18) & 0x3F];
-                    *dest++ = base64Ptr[(triple >> 12) & 0x3F];
-                    *dest++ = base64Ptr[(triple >> 6) & 0x3F];
+                    *dest++ = base64Ptr[triple >> 18 & 0x3F];
+                    *dest++ = base64Ptr[triple >> 12 & 0x3F];
+                    *dest++ = base64Ptr[triple >> 6 & 0x3F];
                     *dest++ = base64Ptr[triple & 0x3F];
                 }
 
                 if (remainingBytes > 0)
                 {
-                    uint triple = (uint)(*src++) << 16;
-                    if (remainingBytes > 1) triple |= (uint)(*src++) << 8;
+                    uint triple = (uint)*src++ << 16;
+                    if (remainingBytes > 1) triple |= (uint)*src++ << 8;
 
-                    *dest++ = base64Ptr[(triple >> 18) & 0x3F];
-                    *dest++ = base64Ptr[(triple >> 12) & 0x3F];
+                    *dest++ = base64Ptr[triple >> 18 & 0x3F];
+                    *dest++ = base64Ptr[triple >> 12 & 0x3F];
 
                     if (remainingBytes > 1)
                     {
-                        *dest++ = base64Ptr[(triple >> 6) & 0x3F];
+                        *dest++ = base64Ptr[triple >> 6 & 0x3F];
                     }
                     else
                     {
@@ -244,14 +272,20 @@ namespace QingYi.Core.String
             }
 
             // Base64编码（字符串→Base64字符串）
+            /// <summary>
+        /// 将字符串进行 Base 64 编码。<br />
+        /// Base 64 encoding of the string.
+        /// </summary>
+        /// <param name="text">输入文本<br />Input text</param>
+        /// <returns>被编码的字符串<br />Encoded string</returns>
             public static string Encode(string text)
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(text);
-                return Encode(bytes);
+                return EncodeToBytes(bytes);
             }
 
             // Base64编码（字节数组→Base64字符串）
-            public static unsafe string Encode(byte[] bytes)
+            private static unsafe string EncodeToBytes(byte[] bytes)
             {
                 int inputLength = bytes.Length;
                 int outputLength = (inputLength + 2) / 3 * 4;
@@ -267,13 +301,13 @@ namespace QingYi.Core.String
                     // 处理完整3字节组
                     while (remaining >= 3)
                     {
-                        uint value = (uint)(*inPtr++) << 16;
-                        value |= (uint)(*inPtr++) << 8;
+                        uint value = (uint)*inPtr++ << 16;
+                        value |= (uint)*inPtr++ << 8;
                         value |= *inPtr++;
 
-                        *outPtr++ = s_base64Chars[(value >> 18) & 0x3F];
-                        *outPtr++ = s_base64Chars[(value >> 12) & 0x3F];
-                        *outPtr++ = s_base64Chars[(value >> 6) & 0x3F];
+                        *outPtr++ = s_base64Chars[value >> 18 & 0x3F];
+                        *outPtr++ = s_base64Chars[value >> 12 & 0x3F];
+                        *outPtr++ = s_base64Chars[value >> 6 & 0x3F];
                         *outPtr++ = s_base64Chars[value & 0x3F];
                         remaining -= 3;
                     }
@@ -281,12 +315,12 @@ namespace QingYi.Core.String
                     // 处理剩余字节
                     if (remaining > 0)
                     {
-                        uint value = (uint)(*inPtr++) << 16;
-                        if (remaining == 2) value |= (uint)(*inPtr++) << 8;
+                        uint value = (uint)*inPtr++ << 16;
+                        if (remaining == 2) value |= (uint)*inPtr++ << 8;
 
-                        *outPtr++ = s_base64Chars[(value >> 18) & 0x3F];
-                        *outPtr++ = s_base64Chars[(value >> 12) & 0x3F];
-                        *outPtr++ = remaining == 2 ? s_base64Chars[(value >> 6) & 0x3F] : '=';
+                        *outPtr++ = s_base64Chars[value >> 18 & 0x3F];
+                        *outPtr++ = s_base64Chars[value >> 12 & 0x3F];
+                        *outPtr++ = remaining == 2 ? s_base64Chars[value >> 6 & 0x3F] : '=';
                         *outPtr++ = '=';
                     }
                 }
@@ -295,6 +329,12 @@ namespace QingYi.Core.String
             }
 
             // Base64解码（Base64字符串→字符串）
+            /// <summary>
+        /// 将字符串进行 Base 64 编码。<br />
+        /// Base 64 decoding of the string.
+        /// </summary>
+        /// <param name="base64Text">输入文本<br />Input text</param>
+        /// <returns>被解码的字符串<br />Decoded string</returns>
             public static string Decode(string base64Text)
             {
                 byte[] bytes = DecodeToBytes(base64Text);
@@ -302,7 +342,7 @@ namespace QingYi.Core.String
             }
 
             // Base64解码（Base64字符串→字节数组）
-            public static unsafe byte[] DecodeToBytes(string base64Text)
+            private static unsafe byte[] DecodeToBytes(string base64Text)
             {
                 int inputLength = base64Text.Length;
                 char[] cleaned = new char[inputLength];
@@ -389,12 +429,38 @@ namespace QingYi.Core.String
     public static class Base64Extension
     {
 #if NET6_0_OR_GREATER
+        /// <summary>
+        /// 将字符串进行 Base 64 编码。<br />
+        /// Base 64 encoding of the string.
+        /// </summary>
+        /// <param name="input">输入文本<br />Input text</param>
+        /// <param name="encoding">字符编码标准<br />Character coding standard</param>
+        /// <returns>被编码的字符串<br />Encoded string</returns>
         public static string EncodeBase64(this string input, Base64.TextEncoding encoding = Base64.TextEncoding.UTF8) => Base64.Encode(input, encoding);
 
+        /// <summary>
+        /// 将字符串进行 Base 64 编码。<br />
+        /// Base 64 decoding of the string.
+        /// </summary>
+        /// <param name="input">输入文本<br />Input text</param>
+        /// <param name="encoding">字符编码标准<br />Character coding standard</param>
+        /// <returns>被解码的字符串<br />Decoded string</returns>
         public static string DecodeBase64(this string input, Base64.TextEncoding encoding = Base64.TextEncoding.UTF8) => Base64.Decode(input, encoding);
 #else
+        /// <summary>
+        /// 将字符串进行 Base 64 编码。<br />
+        /// Base 64 encoding of the string.
+        /// </summary>
+        /// <param name="input">输入文本<br />Input text</param>
+        /// <returns>被编码的字符串<br />Encoded string</returns>
         public static string EncodeBase64(this string input) => Base64.Encode(input);
 
+        /// <summary>
+        /// 将字符串进行 Base 64 编码。<br />
+        /// Base 64 decoding of the string.
+        /// </summary>
+        /// <param name="input">输入文本<br />Input text</param>
+        /// <returns>被解码的字符串<br />Decoded string</returns>
         public static string DecodeBase64(this string input) => Base64.Decode(input);
 #endif
     }

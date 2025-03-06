@@ -1,4 +1,4 @@
-﻿namespace QingYi.Core.String.Chars
+﻿namespace QingYi.Core.String.Base.Chars
 {
     internal readonly struct Base
     {
