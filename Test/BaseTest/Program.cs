@@ -1,10 +1,11 @@
 ﻿using QingYi.Core.String.Base;
+using QingYi.Core.String.Base.Base32;
 
 namespace BaseTest
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             string testText = "Hello World!";
 
@@ -42,7 +43,21 @@ namespace BaseTest
             #region Base16
             #endregion
 
-            #region Base32
+            #region Base32 RFC4648
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base32 RFC4648 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base32RFC4648.Encode(testText, Base32RFC4648.StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base32RFC4648.Decode(Base32RFC4648.Encode(testText, Base32RFC4648.StringEncoding.UTF8), Base32RFC4648.StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
             #endregion
 
             #region Base36
