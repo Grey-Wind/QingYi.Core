@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 namespace QingYi.Core.FileUtility.UserProfile
