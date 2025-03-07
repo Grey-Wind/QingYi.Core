@@ -97,6 +97,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Web\**" />
+    <EmbeddedResource Remove="Web\**" />
+    <None Remove="Web\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="icon.png" />
     <None Remove="readme.md" />
   </ItemGroup>
@@ -128,7 +134,6 @@
 
   <ItemGroup>
     <Folder Include="FileUtility\UserProfile\AppData\" />
-    <Folder Include="Web\" />
   </ItemGroup>
 
 </Project>
