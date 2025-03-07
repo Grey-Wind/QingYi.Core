@@ -14,7 +14,7 @@ namespace QingYi.Core.FileUtility.UserProfile
         /// Gets the path to the saved games directory.<br/>
         /// 获取已保存游戏目录的路径。
         /// </summary>
-        public static string path = Get();
+        public static string path => Get();
 
         /// <summary>
         /// Gets the path to the saved games directory.<br/>
