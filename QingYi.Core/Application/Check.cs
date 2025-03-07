@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
+#if !BROWSER
 namespace QingYi.Core.Application
 {
     /// <summary>
@@ -32,3 +33,4 @@ namespace QingYi.Core.Application
         }
     }
 }
+#endif

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
+
+#if !BROWSER
+
 #pragma warning disable IDE0028, IDE0090, IDE0300, IDE0305, CA1861
 
 namespace QingYi.Core.Network
@@ -208,3 +211,5 @@ namespace QingYi.Core.Network
         public static List<PortInfo> FilterByApplicationName(List<PortInfo> portInfos, string applicationName) => portInfos.Where(p => p.ApplicationName.Equals(applicationName, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 }
+
+#endif
