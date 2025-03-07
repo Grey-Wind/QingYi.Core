@@ -21,7 +21,9 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <PackageReleaseNotes>- Delete Web-related content semi-permanently.
-- Base 2 codec is supported.</PackageReleaseNotes>
+- Base 2 codec is supported.
+- Added local port scanning function.
+- Added the ability to detect if an application is running.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
@@ -97,12 +99,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Web\**" />
-    <EmbeddedResource Remove="Web\**" />
-    <None Remove="Web\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="icon.png" />
     <None Remove="readme.md" />
   </ItemGroup>
@@ -134,6 +130,7 @@
 
   <ItemGroup>
     <Folder Include="FileUtility\UserProfile\AppData\" />
+    <Folder Include="Network\" />
   </ItemGroup>
 
 </Project>
