@@ -1,4 +1,4 @@
-namespace QingYi.Core.FileUtility.GetFileInfo
+﻿namespace QingYi.Core.FileUtility.GetFileInfo
 {
     /// <summary>
     /// Provides functionality to retrieve the name of a file.

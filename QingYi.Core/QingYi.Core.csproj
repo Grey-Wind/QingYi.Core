@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net6.0-windows;net7.0-windows;net8.0-windows;net9.0-windows;</TargetFrameworks>
@@ -15,7 +15,7 @@
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageTags>QingYi;Core;Shell;Folder;File;Base;Base64;Compression;</PackageTags>
+    <PackageTags>QingYi;Core;Shell;Folder;File</PackageTags>
     <NuGetAudit>False</NuGetAudit>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
