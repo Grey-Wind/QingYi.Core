@@ -10,7 +10,7 @@ namespace QingYi.Core.FileUtility.UserProfile
         /// <summary>
         /// Desktop path.
         /// </summary>
-        public static string path = Get();
+        public static string path => Get();
 
         /// <summary>
         /// Get desktop path.
