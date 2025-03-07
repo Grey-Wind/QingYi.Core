@@ -1,4 +1,4 @@
-using QingYi.Core.Shell;
+﻿using QingYi.Core.Shell;
 
 namespace ShellTest
 {
