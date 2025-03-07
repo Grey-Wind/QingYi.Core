@@ -23,7 +23,8 @@
     <PackageReleaseNotes>- Delete Web-related content semi-permanently.
 - Base 2 codec is supported.
 - Added local port scanning function.
-- Added the ability to detect if an application is running.</PackageReleaseNotes>
+- Added the ability to detect if an application is running.
+- Rework the shell function.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
@@ -101,6 +102,8 @@
   <ItemGroup>
     <None Remove="icon.png" />
     <None Remove="readme.md" />
+    <None Remove="Shell\How-To-Use.md" />
+    <None Remove="Shell\How-To-Use_CN.md" />
   </ItemGroup>
 
   <ItemGroup>
@@ -108,6 +111,8 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </Content>
+    <Content Include="Shell\How-To-Use.md" />
+    <Content Include="Shell\How-To-Use_CN.md" />
   </ItemGroup>
 
   <ItemGroup>
