@@ -13,3 +13,10 @@
 Nuget link: https://www.nuget.org/packages/QingYi.Core
 
 The core of our other projects.
+
+## Statement of apology
+Sorry, version 5.0.0 should have been replaced by AGPL-3.0 in the repository, but due to an oversight, it was not found to be modified after the release of the version. Now it has been corrected, and version 5.0.0 still uses AGPL-3.0 instead of MIT.
+
+2525.3.7
+
+Tsing Yi Studio
