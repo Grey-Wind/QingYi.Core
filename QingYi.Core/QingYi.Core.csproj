@@ -20,10 +20,8 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-    <PackageReleaseNotes>· Refactoring project structure.
-· Added compression function.
-·Temporarily removes the Shell module.
-· Delete Web-related content semi-permanently.</PackageReleaseNotes>
+    <PackageReleaseNotes>- Delete Web-related content semi-permanently.
+- Base 2 codec is supported.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
@@ -130,7 +128,6 @@
 
   <ItemGroup>
     <Folder Include="FileUtility\UserProfile\AppData\" />
-    <Folder Include="Shell\" />
     <Folder Include="Web\" />
   </ItemGroup>
 
