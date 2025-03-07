@@ -15,7 +15,7 @@
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageTags>QingYi;Core;Shell;Folder;File</PackageTags>
+    <PackageTags>QingYi;Core;Shell;Folder;File;Base;Base64;Compression;</PackageTags>
     <NuGetAudit>False</NuGetAudit>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
