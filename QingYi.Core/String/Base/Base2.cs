@@ -42,6 +42,12 @@ namespace QingYi.Core.String.Base
             /// </summary>
             UTF32,
 
+#if NET6_0_OR_GREATER
+            /// <summary>
+            /// Latin1
+            /// </summary>
+            Latin1,
+#endif
             /// <summary>
             /// UTF-7
             /// </summary>
@@ -107,6 +113,9 @@ namespace QingYi.Core.String.Base
                 StringEncoding.UTF16LE => Encoding.Unicode.GetBytes(input),
                 StringEncoding.UTF16BE => Encoding.BigEndianUnicode.GetBytes(input),
                 StringEncoding.UTF32 => GetUtf32Bytes(input, isBigEndian),
+#if NET6_0_OR_GREATER
+                StringEncoding.Latin1 => Encoding.Latin1.GetBytes(input),
+#endif
                 StringEncoding.ASCII => Encoding.ASCII.GetBytes(input),
                 StringEncoding.UTF7 => Encoding.UTF7.GetBytes(input),
                 _ => throw new ArgumentOutOfRangeException(nameof(encoding))
@@ -123,6 +132,9 @@ namespace QingYi.Core.String.Base
                 StringEncoding.UTF16LE => Encoding.Unicode.GetString(bytes),
                 StringEncoding.UTF16BE => Encoding.BigEndianUnicode.GetString(bytes),
                 StringEncoding.UTF32 => GetUtf32String(bytes, isBigEndian),
+#if NET6_0_OR_GREATER
+                StringEncoding.Latin1 => Encoding.Latin1.GetString(bytes),
+#endif
                 StringEncoding.ASCII => Encoding.ASCII.GetString(bytes),
                 StringEncoding.UTF7 => Encoding.UTF7.GetString(bytes),
                 _ => throw new ArgumentOutOfRangeException(nameof(encoding))

@@ -46,6 +46,11 @@ namespace QingYi.Core.String.Base
             UTF32,
 
             /// <summary>
+            /// Latin1
+            /// </summary>
+            Latin1,
+
+            /// <summary>
             /// UTF-7
             /// </summary>
             [Obsolete(message: "UTF-7 has been deprecated because it is obsolete.")]
