@@ -59,6 +59,23 @@ namespace BaseTest
             Console.ResetColor();
             #endregion
 
+            #region Base32 Extended Hex
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base32 Extended Hex ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base32ExtendedHex.Encode(testText, Base32ExtendedHex.StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base32ExtendedHex.Decode(Base32ExtendedHex.Encode(testText, Base32ExtendedHex.StringEncoding.UTF8), Base32ExtendedHex.StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+            #endregion
+
             #region Base36
             #endregion
 
