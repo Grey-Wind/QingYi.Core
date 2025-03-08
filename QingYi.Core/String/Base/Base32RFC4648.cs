@@ -3,7 +3,7 @@ using System.Text;
 
 #pragma warning disable CA1510, CS0618, SYSLIB0001, IDE0300, IDE0301
 
-namespace QingYi.Core.String.Base.Base32
+namespace QingYi.Core.String.Base
 {
     public static class Base32RFC4648
     {
