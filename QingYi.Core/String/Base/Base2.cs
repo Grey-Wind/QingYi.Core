@@ -87,6 +87,15 @@ namespace QingYi.Core.String.Base
             byte[] bytes = GetEncodedBytes(input, encoding, isBigEndian);
             return BytesToBase2(bytes);
         }
+        
+        /// <summary>
+        /// 将字符串编码为 Base 2，默认为小端。<br />
+        /// Encodes the string as Base 2, which defaults to a small endian.
+        /// </summary>
+        /// <param name="input">输入文本<br />Input text</param>
+        /// <param name="isBigEndian">启用大端<br />Enable big endian</param>
+        /// <returns>被编码的字符串<br />Encoded string</returns>
+        public static string Encode(string input, bool isBigEndian = false) => Encode(input, StringEncoding.UTF8, isBigEndian);
 
         /// <summary>
         /// 将字符串解码为 Base 2，默认为小端。<br />
@@ -103,6 +112,18 @@ namespace QingYi.Core.String.Base
 
             byte[] bytes = Base2ToBytes(base2);
             return GetDecodedString(bytes, encoding, isBigEndian);
+        }
+
+        /// <summary>
+        /// 将字符串解码为 Base 2，默认为小端。<br />
+        /// Decodes the string as Base 2, which defaults to a small endian.
+        /// </summary>
+        /// <param name="base2">输入文本<br />Input base 2 text</param>
+        /// <param name="isBigEndian">启用大端<br />Enable big endian</param>
+        /// <returns>被解码的字符串<br />Decoded string</returns>
+        public static string Decode(string base2, bool isBigEndian = false)
+        {
+            return Decode(base2, StringEncoding.UTF8, isBigEndian);
         }
 
         private static byte[] GetEncodedBytes(string input, StringEncoding encoding, bool isBigEndian)
@@ -232,5 +253,46 @@ namespace QingYi.Core.String.Base
 
             return result;
         }
+    }
+
+    public static class Base2Extension
+    {
+        /// <summary>
+        /// 将字符串编码为 Base 2，默认为小端。<br />
+        /// Encodes the string as Base 2, which defaults to a small endian.
+        /// </summary>
+        /// <param name="input">输入文本<br />Input text</param>
+        /// <param name="encoding">字符串编码格式<br />String encoding format</param>
+        /// <param name="isBigEndian">启用大端<br />Enable big endian</param>
+        /// <returns>被编码的字符串<br />Encoded string</returns>
+        public static string Encode(this string input, Base2.StringEncoding encoding, bool isBigEndian = false) => Base2.Encode(input, encoding, isBigEndian);
+
+        /// <summary>
+        /// 将字符串编码为 Base 2，默认为小端。<br />
+        /// Encodes the string as Base 2, which defaults to a small endian.
+        /// </summary>
+        /// <param name="input">输入文本<br />Input text</param>
+        /// <param name="isBigEndian">启用大端<br />Enable big endian</param>
+        /// <returns>被编码的字符串<br />Encoded string</returns>
+        public static string Encode(this string input, bool isBigEndian = false) => Base2.Encode(input, isBigEndian);
+
+        /// <summary>
+        /// 将字符串解码为 Base 2，默认为小端。<br />
+        /// Decodes the string as Base 2, which defaults to a small endian.
+        /// </summary>
+        /// <param name="input">输入文本<br />Input base 2 text</param>
+        /// <param name="encoding">字符串编码格式<br />String encoding format</param>
+        /// <param name="isBigEndian">启用大端<br />Enable big endian</param>
+        /// <returns>被解码的字符串<br />Decoded string</returns>
+        public static string Decode(this string input, Base2.StringEncoding encoding, bool isBigEndian = false) => Base2.Decode(input, encoding, isBigEndian);
+
+        /// <summary>
+        /// 将字符串解码为 Base 2，默认为小端。<br />
+        /// Decodes the string as Base 2, which defaults to a small endian.
+        /// </summary>
+        /// <param name="input">输入文本<br />Input base 2 text</param>
+        /// <param name="isBigEndian">启用大端<br />Enable big endian</param>
+        /// <returns>被解码的字符串<br />Decoded string</returns>
+        public static string Decode(this string input, bool isBigEndian = false) => Base2.Decode(input, isBigEndian);
     }
 }
