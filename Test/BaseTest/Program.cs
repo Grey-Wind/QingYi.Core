@@ -76,6 +76,23 @@ namespace BaseTest
             Console.ResetColor();
             #endregion
 
+            #region Base32 z-base-32
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base32 z-base-32 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base32z.Encode(testText, Base32z.StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base32z.Decode(Base32z.Encode(testText, Base32z.StringEncoding.UTF8), Base32z.StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+            #endregion
+
             #region Base36
             #endregion
 
