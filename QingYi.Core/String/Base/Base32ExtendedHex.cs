@@ -61,14 +61,14 @@ namespace QingYi.Core.String.Base
             DecodeMap[PaddingChar] = 0xFE;
         }
 
-        public static string Encode(string input, StringEncoding encoding)
+        public static string Encode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
             byte[] bytes = GetBytes(input, encoding);
             return ConvertToBase32(bytes);
         }
 
-        public static string Decode(string base32, StringEncoding encoding)
+        public static string Decode(string base32, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (base32 == null) throw new ArgumentNullException(nameof(base32));
             byte[] bytes = ConvertFromBase32(base32);
