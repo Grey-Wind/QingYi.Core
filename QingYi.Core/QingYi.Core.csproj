@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net6.0-windows;net7.0-windows;net8.0-windows;net9.0-windows;net9.0-browser</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>QingYi.Core</Title>
-    <Version>5.1.0</Version>
+    <Version>5.1.0-preview</Version>
     <Authors>QingYi-Studio</Authors>
     <Copyright>AGPL-3.0</Copyright>
     <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Core</PackageProjectUrl>
@@ -18,7 +18,8 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-    <PackageReleaseNotes>- Adds Latin1 encoding to Base2 codec</PackageReleaseNotes>
+    <PackageReleaseNotes>- Adds Latin1 encoding to Base2 codec.
+- Add Base32 implementations of various encodings.</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
