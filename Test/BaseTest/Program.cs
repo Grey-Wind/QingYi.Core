@@ -93,6 +93,23 @@ namespace BaseTest
             Console.ResetColor();
             #endregion
 
+            #region Base32 Crockford's
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base32 Crockford's ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base32Crockford.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base32Crockford.Decode(Base32Crockford.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+            #endregion
+
             #region Base36
             #endregion
 
