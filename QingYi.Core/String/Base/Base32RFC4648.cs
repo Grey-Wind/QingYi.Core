@@ -7,50 +7,6 @@ namespace QingYi.Core.String.Base
 {
     public static class Base32RFC4648
     {
-        /// <summary>
-        /// 字符串编码格式。<br />
-        /// String encoding.
-        /// </summary>
-        public enum StringEncoding
-        {
-            /// <summary>
-            /// UTF-8
-            /// </summary>
-            UTF8,
-
-            /// <summary>
-            /// UTF-16 LE
-            /// </summary>
-            UTF16LE,
-
-            /// <summary>
-            /// UTF-16 BE
-            /// </summary>
-            UTF16BE,
-
-            /// <summary>
-            /// ASCII
-            /// </summary>
-            ASCII,
-
-            /// <summary>
-            /// UTF-32
-            /// </summary>
-            UTF32,
-
-#if NET6_0_OR_GREATER
-            /// <summary>
-            /// Latin1
-            /// </summary>
-            Latin1,
-#endif
-            /// <summary>
-            /// UTF-7
-            /// </summary>
-            [Obsolete(message: "UTF-7 has been deprecated because it is obsolete.")]
-            UTF7,
-        }
-
         private const string Base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
         private static readonly byte[] DecodeTable = new byte[128];
 
