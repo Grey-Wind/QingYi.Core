@@ -25,9 +25,9 @@ namespace BaseTest
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Encode: ");
-            Console.Write($"{Base2.Encode(testText, Base2.StringEncoding.UTF8)}  ");
+            Console.Write($"{Base2.Encode(testText, StringEncoding.UTF8)}  ");
             Console.Write("Decode: ");
-            Console.Write($"{Base2.Decode(Base2.Encode(testText, Base2.StringEncoding.UTF8), Base2.StringEncoding.UTF8)}\n");
+            Console.Write($"{Base2.Decode(Base2.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
 
             // 恢复为默认颜色
             Console.ResetColor();
@@ -51,9 +51,9 @@ namespace BaseTest
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Encode: ");
-            Console.Write($"{Base32RFC4648.Encode(testText, Base32RFC4648.StringEncoding.UTF8)}  ");
+            Console.Write($"{Base32RFC4648.Encode(testText, StringEncoding.UTF8)}  ");
             Console.Write("Decode: ");
-            Console.Write($"{Base32RFC4648.Decode(Base32RFC4648.Encode(testText, Base32RFC4648.StringEncoding.UTF8), Base32RFC4648.StringEncoding.UTF8)}\n");
+            Console.Write($"{Base32RFC4648.Decode(Base32RFC4648.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
 
             // 恢复为默认颜色
             Console.ResetColor();
@@ -68,9 +68,9 @@ namespace BaseTest
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Encode: ");
-            Console.Write($"{Base32ExtendedHex.Encode(testText, Base32ExtendedHex.StringEncoding.UTF8)}  ");
+            Console.Write($"{Base32ExtendedHex.Encode(testText, StringEncoding.UTF8)}  ");
             Console.Write("Decode: ");
-            Console.Write($"{Base32ExtendedHex.Decode(Base32ExtendedHex.Encode(testText, Base32ExtendedHex.StringEncoding.UTF8), Base32ExtendedHex.StringEncoding.UTF8)}\n");
+            Console.Write($"{Base32ExtendedHex.Decode(Base32ExtendedHex.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
 
             // 恢复为默认颜色
             Console.ResetColor();
@@ -85,9 +85,9 @@ namespace BaseTest
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Encode: ");
-            Console.Write($"{Base32z.Encode(testText, Base32z.StringEncoding.UTF8)}  ");
+            Console.Write($"{Base32z.Encode(testText, StringEncoding.UTF8)}  ");
             Console.Write("Decode: ");
-            Console.Write($"{Base32z.Decode(Base32z.Encode(testText, Base32z.StringEncoding.UTF8), Base32z.StringEncoding.UTF8)}\n");
+            Console.Write($"{Base32z.Decode(Base32z.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
 
             // 恢复为默认颜色
             Console.ResetColor();
@@ -114,9 +114,9 @@ namespace BaseTest
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Encode: ");
-            Console.Write($"{Base64.Encode(testText, Base64.TextEncoding.UTF8)}  ");
+            Console.Write($"{Base64.Encode(testText, StringEncoding.UTF8)}  ");
             Console.Write("Decode: ");
-            Console.Write($"{Base64.Decode(Base64.Encode(testText, Base64.TextEncoding.UTF8), Base64.TextEncoding.UTF8)}\n");
+            Console.Write($"{Base64.Decode(Base64.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
 
             // 恢复为默认颜色
             Console.ResetColor();
