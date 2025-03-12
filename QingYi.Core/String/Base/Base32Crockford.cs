@@ -24,7 +24,7 @@ namespace QingYi.Core.String.Base
             CharMap['L'] = 1; CharMap['l'] = 1;
         }
 
-        public static string Encode(string source, StringEncoding encodingType)
+        public static string Encode(string source, StringEncoding encodingType = StringEncoding.UTF8)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (source.Length == 0) return string.Empty;
@@ -33,7 +33,7 @@ namespace QingYi.Core.String.Base
             return EncodeBytes(bytes);
         }
 
-        public static string Decode(string encoded, StringEncoding encodingType)
+        public static string Decode(string encoded, StringEncoding encodingType = StringEncoding.UTF8)
         {
             if (encoded == null) throw new ArgumentNullException(nameof(encoded));
             if (encoded.Length == 0) return string.Empty;
