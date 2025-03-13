@@ -126,6 +126,9 @@
   <ItemGroup>
     <Folder Include="FileUtility\UserProfile\AppData\" />
     <Folder Include="Network\" />
+    <Folder Include="Regedit\" />
+    <Folder Include="EnvironmentVariable\" />
+    <Folder Include="String\Encoding\" />
   </ItemGroup>
 
 </Project>

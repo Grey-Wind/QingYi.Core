@@ -6,6 +6,7 @@ namespace QingYi.Core.String.Base
     /// 字符串编码格式。<br />
     /// String encoding.
     /// </summary>
+    [Flags]
     public enum StringEncoding
     {
         /// <summary>
