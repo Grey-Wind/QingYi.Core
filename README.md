@@ -13,3 +13,5 @@
 Nuget link: https://www.nuget.org/packages/QingYi.Core
 
 The core of our other projects.
+
+This project also has a lot of utility features, such as Base encoding, file information retrieval, file/folder compression, Shell, etc.
