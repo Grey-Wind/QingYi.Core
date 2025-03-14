@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using System;
 
+#pragma warning disable SYSLIB0001, CS0618
+
 namespace QingYi.Core.String.Base
 {
     public static class Base32WordSafe
@@ -38,6 +40,9 @@ namespace QingYi.Core.String.Base
             StringEncoding.UTF32 => new UTF32Encoding(),
             StringEncoding.UTF7 => Encoding.UTF7,
             StringEncoding.ASCII => Encoding.ASCII,
+#if NET6_0_OR_GREATER
+            StringEncoding.Latin1 => Encoding.Latin1,
+#endif
             _ => throw new ArgumentOutOfRangeException(nameof(encoding))
         };
 
