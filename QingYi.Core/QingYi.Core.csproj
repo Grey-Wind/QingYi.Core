@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net6.0-windows;net7.0-windows;net8.0-windows;net9.0-windows;net9.0-browser</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>QingYi.Core</Title>
-    <Version>5.1.0-pre1</Version>
+    <Version>5.1.0-pre2</Version>
     <Authors>QingYi-Studio</Authors>
     <Copyright>AGPL-3.0</Copyright>
     <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Core</PackageProjectUrl>
@@ -18,8 +18,7 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-    <PackageReleaseNotes>- Adds Latin1 encoding to Base2 codec.
-- Add Base32 implementations of various encodings.</PackageReleaseNotes>
+    <PackageReleaseNotes>- Added registry editing capabilities. (Untested)</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
@@ -126,9 +125,9 @@
   <ItemGroup>
     <Folder Include="FileUtility\UserProfile\AppData\" />
     <Folder Include="Network\" />
-    <Folder Include="Regedit\" />
     <Folder Include="EnvironmentVariable\" />
     <Folder Include="String\Encoding\" />
+    <Folder Include="PowerSettings\" />
   </ItemGroup>
 
 </Project>
