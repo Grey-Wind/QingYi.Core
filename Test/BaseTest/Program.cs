@@ -31,6 +31,8 @@ namespace BaseTest
 
             // 恢复为默认颜色
             Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base8
@@ -57,6 +59,8 @@ namespace BaseTest
 
             // 恢复为默认颜色
             Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base32 Extended Hex
@@ -74,6 +78,8 @@ namespace BaseTest
 
             // 恢复为默认颜色
             Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base32 z-base-32
@@ -91,6 +97,8 @@ namespace BaseTest
 
             // 恢复为默认颜色
             Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base32 Crockford's
@@ -108,6 +116,8 @@ namespace BaseTest
 
             // 恢复为默认颜色
             Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base32 GeoHash
@@ -125,6 +135,8 @@ namespace BaseTest
 
             // 恢复为默认颜色
             Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base32 Word-safe alphabet
@@ -142,6 +154,8 @@ namespace BaseTest
 
             // 恢复为默认颜色
             Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base36
@@ -171,6 +185,8 @@ namespace BaseTest
 
             // 恢复为默认颜色
             Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base85
@@ -193,6 +209,8 @@ namespace BaseTest
 
             #region Base128
             #endregion
+
+            GC.Collect();
 
             Console.ReadLine();
         }

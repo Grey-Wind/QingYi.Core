@@ -7,6 +7,7 @@ namespace QingYi.Core.String.Base
     {
         private const string Alphabet = "23456789CFGHJMPQRVWXcfghjmpqrvwx";
         private static readonly byte[] LookupTable = new byte[256];
+        private const int MaxPaddingAttempts = 6; // 根据Base32规范最多需要6个填充
 
         static Base32WordSafe()
         {
@@ -44,10 +45,7 @@ namespace QingYi.Core.String.Base
         {
             if (input.Length == 0) return string.Empty;
 
-            // 计算基础长度和需要填充的字符数
-            var baseLength = (input.Length * 8 + 4) / 5;
-            var padding = (8 - (baseLength % 8)) % 8;
-            var outputLength = baseLength + padding;
+            var outputLength = (input.Length * 8 + 4) / 5;
             var output = new char[outputLength];
 
             fixed (byte* inputPtr = input)
@@ -57,7 +55,6 @@ namespace QingYi.Core.String.Base
                 var bitsLeft = 0;
                 var outputIndex = 0;
 
-                // 编码主体
                 for (var i = 0; i < input.Length; i++)
                 {
                     buffer = (buffer << 8) | inputPtr[i];
@@ -71,16 +68,11 @@ namespace QingYi.Core.String.Base
                     }
                 }
 
-                // 处理剩余位
                 if (bitsLeft > 0)
                 {
                     var value = (buffer << (5 - bitsLeft)) & 0x1F;
-                    outputPtr[outputIndex++] = Alphabet[value];
+                    outputPtr[outputIndex] = Alphabet[value];
                 }
-
-                // 添加填充字符
-                for (; outputIndex < outputLength; outputIndex++)
-                    outputPtr[outputIndex] = '=';
             }
 
             return new string(output);
@@ -89,14 +81,41 @@ namespace QingYi.Core.String.Base
         private static unsafe byte[] ConvertFromBase32(string input)
         {
             if (input.Length == 0) return Array.Empty<byte>();
-            if (input.Length % 8 != 0)
-                throw new ArgumentException("Base32 string length must be multiple of 8");
 
+            // 生成所有可能的填充组合
+            var candidates = new string[MaxPaddingAttempts + 1];
+            for (int p = 0; p <= MaxPaddingAttempts; p++)
+            {
+                candidates[p] = input.PadRight(input.Length + p, '=');
+                if (candidates[p].Length % 8 != 0)
+                    candidates[p] = null; // 仅保留有效长度
+            }
+
+            foreach (var candidate in candidates)
+            {
+                if (candidate == null) continue;
+
+                try
+                {
+                    return ProcessPaddedString(candidate);
+                }
+                catch (ArgumentException)
+                {
+                    // 继续尝试下一个候选
+                }
+            }
+
+            throw new ArgumentException("Invalid Base32 string");
+        }
+
+        private static unsafe byte[] ProcessPaddedString(string input)
+        {
             var effectiveLength = input.Length;
             while (effectiveLength > 0 && input[effectiveLength - 1] == '=')
                 effectiveLength--;
 
-            var output = new byte[effectiveLength * 5 / 8];
+            var outputLength = effectiveLength * 5 / 8;
+            var output = new byte[outputLength];
 
             fixed (char* inputPtr = input)
             fixed (byte* outputPtr = output)
@@ -120,6 +139,10 @@ namespace QingYi.Core.String.Base
                         outputPtr[outputIndex++] = (byte)((buffer >> bitsLeft) & 0xFF);
                     }
                 }
+
+                // 验证剩余位数有效性
+                if (bitsLeft >= 5)
+                    throw new ArgumentException("Invalid padding");
             }
 
             return output;
