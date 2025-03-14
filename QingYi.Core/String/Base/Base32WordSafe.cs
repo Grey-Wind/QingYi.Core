@@ -5,7 +5,7 @@ using System;
 
 namespace QingYi.Core.String.Base
 {
-    public static class Base32WordSafe
+    public class Base32WordSafe
     {
         private const string Alphabet = "23456789CFGHJMPQRVWXcfghjmpqrvwx";
         private static readonly byte[] LookupTable = new byte[256];
@@ -17,6 +17,8 @@ namespace QingYi.Core.String.Base
             for (var i = 0; i < Alphabet.Length; i++)
                 LookupTable[Alphabet[i]] = (byte)i;
         }
+
+        public override string ToString() => Alphabet;
 
         public static string Encode(string input, StringEncoding encoding)
         {

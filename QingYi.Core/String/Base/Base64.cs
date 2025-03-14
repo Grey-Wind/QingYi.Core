@@ -12,7 +12,7 @@ namespace QingYi.Core.String.Base
     /// 适用于 .NET 6.0 及更高版本的 Base 64 编解码库。<br />
     /// Base 64 codec library for.NET 6.0 and higher.
     /// </summary>
-    public unsafe static class Base64
+    public unsafe class Base64
     {
         private const string Base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         private static readonly sbyte[] Base64Inv = new sbyte[128];
@@ -50,6 +50,8 @@ namespace QingYi.Core.String.Base
             for (int i = 0; i < Base64Chars.Length; i++) Base64Inv[Base64Chars[i]] = (sbyte)i;
             Base64Inv['='] = 0;
         }
+
+        public override string ToString() => Base64Chars;
 
         /// <summary>
         /// 将字符串进行 Base 64 编码。<br />
@@ -222,7 +224,7 @@ namespace QingYi.Core.String.Base
     /// 适用于.NET Standard 2.1的 Base 64 编解码类。
     /// Base 64 codec class for.NET Standard 2.1.<br />
     /// </summary>
-    public static class Base64
+    public class Base64
     {
         private static readonly char[] s_base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".ToCharArray();
         private static readonly int[] s_decodeTable = new int[256];
@@ -233,6 +235,8 @@ namespace QingYi.Core.String.Base
             for (int i = 0; i < s_base64Chars.Length; i++) s_decodeTable[s_base64Chars[i]] = i;
             s_decodeTable['='] = 0; // 特殊处理填充字符
         }
+
+        public override string ToString() => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
         // Base64编码（字符串→Base64字符串）
         /// <summary>

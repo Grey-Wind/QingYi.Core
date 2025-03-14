@@ -26,6 +26,8 @@ namespace QingYi.Core.String.Base
             CharMap['L'] = 1; CharMap['l'] = 1;
         }
 
+        public override string ToString() => Alphabet;
+
         public static string Encode(string source, StringEncoding encodingType = StringEncoding.UTF8)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
