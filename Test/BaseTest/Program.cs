@@ -4,7 +4,7 @@ namespace BaseTest
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             string testText = "Hello World!";
 
@@ -25,12 +25,14 @@ namespace BaseTest
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Encode: ");
-            Console.Write($"{Base2.Encode(testText, Base2.StringEncoding.UTF8)}  ");
+            Console.Write($"{Base2.Encode(testText, StringEncoding.UTF8)}  ");
             Console.Write("Decode: ");
-            Console.Write($"{Base2.Decode(Base2.Encode(testText, Base2.StringEncoding.UTF8), Base2.StringEncoding.UTF8)}\n");
+            Console.Write($"{Base2.Decode(Base2.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
 
             // 恢复为默认颜色
             Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base8
@@ -42,7 +44,118 @@ namespace BaseTest
             #region Base16
             #endregion
 
-            #region Base32
+            #region Base32 RFC4648
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base32 RFC4648 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base32RFC4648.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base32RFC4648.Decode(Base32RFC4648.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
+            #endregion
+
+            #region Base32 Extended Hex
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base32 Extended Hex ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base32ExtendedHex.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base32ExtendedHex.Decode(Base32ExtendedHex.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
+            #endregion
+
+            #region Base32 z-base-32
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base32 z-base-32 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base32z.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base32z.Decode(Base32z.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
+            #endregion
+
+            #region Base32 Crockford's
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base32 Crockford's ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base32Crockford.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base32Crockford.Decode(Base32Crockford.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
+            #endregion
+
+            #region Base32 GeoHash
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base32 GeoHash ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base32GeoHash.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base32GeoHash.Decode(Base32GeoHash.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
+            #endregion
+
+            #region Base32 Word-safe alphabet
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base32 Word-safe alphabet ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base32WordSafe.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base32WordSafe.Decode(Base32WordSafe.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base36
@@ -66,12 +179,14 @@ namespace BaseTest
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Encode: ");
-            Console.Write($"{Base64.Encode(testText, Base64.TextEncoding.UTF8)}  ");
+            Console.Write($"{Base64.Encode(testText, StringEncoding.UTF8)}  ");
             Console.Write("Decode: ");
-            Console.Write($"{Base64.Decode(Base64.Encode(testText, Base64.TextEncoding.UTF8), Base64.TextEncoding.UTF8)}\n");
+            Console.Write($"{Base64.Decode(Base64.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
 
             // 恢复为默认颜色
             Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base85
@@ -94,6 +209,8 @@ namespace BaseTest
 
             #region Base128
             #endregion
+
+            GC.Collect();
 
             Console.ReadLine();
         }

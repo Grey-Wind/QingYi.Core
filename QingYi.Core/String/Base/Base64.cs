@@ -14,44 +14,6 @@ namespace QingYi.Core.String.Base
     /// </summary>
     public unsafe static class Base64
     {
-        /// <summary>
-        /// 文本编码格式。<br />
-        /// Text encoding.
-        /// </summary>
-        public enum TextEncoding
-        {
-            /// <summary>
-            /// UTF-8
-            /// </summary>
-            UTF8,
-
-            /// <summary>
-            /// UTF-16 LE
-            /// </summary>
-            UTF16LE,
-
-            /// <summary>
-            /// UTF-16 BE
-            /// </summary>
-            UTF16BE,
-
-            /// <summary>
-            /// ASCII
-            /// </summary>
-            ASCII,
-
-            /// <summary>
-            /// UTF-32
-            /// </summary>
-            UTF32,
-
-            /// <summary>
-            /// UTF-7
-            /// </summary>
-            [Obsolete(message: "UTF-7 has been deprecated because it is obsolete.")]
-            UTF7,
-        }
-
         private const string Base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         private static readonly sbyte[] Base64Inv = new sbyte[128];
 
@@ -96,7 +58,7 @@ namespace QingYi.Core.String.Base
         /// <param name="input">输入文本<br />Input text</param>
         /// <param name="encoding">字符编码标准<br />Character coding standard</param>
         /// <returns>被编码的字符串<br />Encoded string</returns>
-        public static string Encode(string input, TextEncoding encoding = TextEncoding.UTF8)
+        public static string Encode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (string.IsNullOrEmpty(input)) return string.Empty;
 
@@ -111,7 +73,7 @@ namespace QingYi.Core.String.Base
         /// <param name="base64">输入文本<br />Input text</param>
         /// <param name="encoding">字符编码标准<br />Character coding standard</param>
         /// <returns>被解码的字符串<br />Decoded string</returns>
-        public static string Decode(string base64, TextEncoding encoding = TextEncoding.UTF8)
+        public static string Decode(string base64, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (string.IsNullOrEmpty(base64)) return string.Empty;
 
@@ -437,7 +399,7 @@ namespace QingYi.Core.String.Base
         /// <param name="input">输入文本<br />Input text</param>
         /// <param name="encoding">字符编码标准<br />Character coding standard</param>
         /// <returns>被编码的字符串<br />Encoded string</returns>
-        public static string EncodeBase64(this string input, Base64.TextEncoding encoding = Base64.TextEncoding.UTF8) => Base64.Encode(input, encoding);
+        public static string EncodeBase64(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base64.Encode(input, encoding);
 
         /// <summary>
         /// 将字符串进行 Base 64 编码。<br />
@@ -446,7 +408,7 @@ namespace QingYi.Core.String.Base
         /// <param name="input">输入文本<br />Input text</param>
         /// <param name="encoding">字符编码标准<br />Character coding standard</param>
         /// <returns>被解码的字符串<br />Decoded string</returns>
-        public static string DecodeBase64(this string input, Base64.TextEncoding encoding = Base64.TextEncoding.UTF8) => Base64.Decode(input, encoding);
+        public static string DecodeBase64(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base64.Decode(input, encoding);
 #else
         /// <summary>
         /// 将字符串进行 Base 64 编码。<br />
