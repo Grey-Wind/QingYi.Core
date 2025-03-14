@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text;
 
+#pragma warning disable SYSLIB0001, CS0618
+
 namespace QingYi.Core.String.Base
 {
     public static class Base32ExtendedHex

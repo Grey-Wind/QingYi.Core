@@ -2,6 +2,8 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 
+#pragma warning disable SYSLIB0001, CS0618
+
 namespace QingYi.Core.String.Base
 {
     public class Base32Crockford
