@@ -1,165 +1,123 @@
-﻿using System.Buffers;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Text;
 using System;
 
 namespace QingYi.Core.String.Base
 {
     public static class Base32WordSafe
     {
-        private const string Base32Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-        private const byte Padding = (byte)'=';
-        private const int BitsPerChar = 5;
-        private const int ChunkSize = 5;
-
-        private static readonly Encoding[] _encodings;
-        private static readonly Dictionary<char, byte> _reverseLookup;
+        private const string Alphabet = "23456789CFGHJMPQRVWXcfghjmpqrvwx";
+        private static readonly byte[] LookupTable = new byte[256];
 
         static Base32WordSafe()
         {
-            _encodings = new Encoding[6];
-            _encodings[(int)StringEncoding.UTF8] = Encoding.UTF8;
-            _encodings[(int)StringEncoding.UTF16LE] = Encoding.Unicode;
-            _encodings[(int)StringEncoding.UTF16BE] = Encoding.BigEndianUnicode;
-            _encodings[(int)StringEncoding.UTF32] = Encoding.UTF32;
-            _encodings[(int)StringEncoding.UTF7] = Encoding.UTF7;
-            _encodings[(int)StringEncoding.ASCII] = Encoding.ASCII;
-#if NET6_0_OR_GREATER
-            _encodings[(int)StringEncoding.Latin1] = Encoding.Latin1;
-#endif
-
-            _reverseLookup = new Dictionary<char, byte>(Base32Alphabet.Length);
-            for (byte i = 0; i < Base32Alphabet.Length; i++)
-                _reverseLookup[Base32Alphabet[i]] = i;
+            Array.Fill(LookupTable, (byte)0xFF);
+            for (var i = 0; i < Alphabet.Length; i++)
+                LookupTable[Alphabet[i]] = (byte)i;
         }
 
-        public static string Encode(string input, StringEncoding encoding = StringEncoding.UTF8)
+        public static string Encode(string input, StringEncoding encoding)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
-
-            var bytes = _encodings[(int)encoding].GetBytes(input);
-            return Encode(bytes);
+            var bytes = GetEncoding(encoding).GetBytes(input);
+            return ConvertToBase32(bytes);
         }
 
-        public static string Decode(string input, StringEncoding encoding = StringEncoding.UTF8)
+        public static string Decode(string base32Input, StringEncoding encoding)
         {
-            if (input == null) throw new ArgumentNullException(nameof(input));
-
-            var bytes = Decode(input.AsSpan());
-            return _encodings[(int)encoding].GetString(bytes);
+            if (base32Input == null) throw new ArgumentNullException(nameof(base32Input));
+            var bytes = ConvertFromBase32(base32Input);
+            return GetEncoding(encoding).GetString(bytes);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe string Encode(byte[] input)
+        private static Encoding GetEncoding(StringEncoding encoding) => encoding switch
+        {
+            StringEncoding.UTF8 => Encoding.UTF8,
+            StringEncoding.UTF16LE => new UnicodeEncoding(false, false),
+            StringEncoding.UTF16BE => new UnicodeEncoding(true, false),
+            StringEncoding.UTF32 => new UTF32Encoding(),
+            StringEncoding.UTF7 => Encoding.UTF7,
+            StringEncoding.ASCII => Encoding.ASCII,
+            _ => throw new ArgumentOutOfRangeException(nameof(encoding))
+        };
+
+        private static unsafe string ConvertToBase32(byte[] input)
         {
             if (input.Length == 0) return string.Empty;
 
-            // 修正后的长度计算公式
-            int bitCount = input.Length * 8;
-            int baseLength = (bitCount + 4) / 5;
-            int outputLength = (baseLength + 7) & ~7;
+            // 计算基础长度和需要填充的字符数
+            var baseLength = (input.Length * 8 + 4) / 5;
+            var padding = (8 - (baseLength % 8)) % 8;
+            var outputLength = baseLength + padding;
+            var output = new char[outputLength];
 
-            char[]? rentedArray = null;
-            Span<char> output = outputLength <= 256
-                ? stackalloc char[outputLength]
-                : (rentedArray = ArrayPool<char>.Shared.Rent(outputLength));
-
-            try
+            fixed (byte* inputPtr = input)
+            fixed (char* outputPtr = output)
             {
-                fixed (byte* inputPtr = input)
-                fixed (char* outputPtr = output)
+                var buffer = 0;
+                var bitsLeft = 0;
+                var outputIndex = 0;
+
+                // 编码主体
+                for (var i = 0; i < input.Length; i++)
                 {
-                    char* currentOutput = outputPtr;
-                    byte* currentInput = inputPtr;
-                    byte* endInput = inputPtr + input.Length;
+                    buffer = (buffer << 8) | inputPtr[i];
+                    bitsLeft += 8;
 
-                    int buffer = 0;
-                    int bitsLeft = 0;
-                    int charsWritten = 0;
-
-                    // 关键修复：添加输出缓冲区边界检查
-                    while ((currentInput < endInput || bitsLeft > 0) && charsWritten < output.Length)
+                    while (bitsLeft >= 5)
                     {
-                        if (bitsLeft < BitsPerChar && currentInput < endInput)
-                        {
-                            buffer = (buffer << 8) | *currentInput++;
-                            bitsLeft += 8;
-                        }
-
-                        int bitsToTake = Math.Min(BitsPerChar, bitsLeft);
-                        int val = (buffer >> (bitsLeft - bitsToTake)) & ((1 << bitsToTake) - 1);
-                        val <<= (BitsPerChar - bitsToTake);
-
-                        // 再次检查缓冲区边界
-                        if (charsWritten >= output.Length)
-                            break;
-
-                        *currentOutput++ = Base32Alphabet[val];
-                        charsWritten++;
-                        bitsLeft -= bitsToTake;
+                        var value = (buffer >> (bitsLeft - 5)) & 0x1F;
+                        outputPtr[outputIndex++] = Alphabet[value];
+                        bitsLeft -= 5;
                     }
-
-                    // 填充阶段添加双重保护
-                    while (charsWritten % 8 != 0 && charsWritten < output.Length)
-                    {
-                        *currentOutput++ = (char)Padding;
-                        charsWritten++;
-                    }
-
-                    // 最终长度验证
-                    if (charsWritten != outputLength)
-                        throw new InvalidOperationException($"Length mismatch: {charsWritten} vs {outputLength}");
-
-                    return new string(outputPtr, 0, charsWritten);
                 }
+
+                // 处理剩余位
+                if (bitsLeft > 0)
+                {
+                    var value = (buffer << (5 - bitsLeft)) & 0x1F;
+                    outputPtr[outputIndex++] = Alphabet[value];
+                }
+
+                // 添加填充字符
+                for (; outputIndex < outputLength; outputIndex++)
+                    outputPtr[outputIndex] = '=';
             }
-            finally
-            {
-                if (rentedArray != null)
-                    ArrayPool<char>.Shared.Return(rentedArray);
-            }
+
+            return new string(output);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe byte[] Decode(ReadOnlySpan<char> input)
+        private static unsafe byte[] ConvertFromBase32(string input)
         {
-            if (input.IsEmpty) return Array.Empty<byte>();
+            if (input.Length == 0) return Array.Empty<byte>();
+            if (input.Length % 8 != 0)
+                throw new ArgumentException("Base32 string length must be multiple of 8");
 
-            int paddingCount = 0;
-            int length = input.Length;
-            while (length > 0 && input[length - 1] == Padding)
-            {
-                paddingCount++;
-                length--;
-            }
+            var effectiveLength = input.Length;
+            while (effectiveLength > 0 && input[effectiveLength - 1] == '=')
+                effectiveLength--;
 
-            int outputLength = (length * BitsPerChar) / 8;
-            byte[] output = new byte[outputLength];
+            var output = new byte[effectiveLength * 5 / 8];
 
             fixed (char* inputPtr = input)
             fixed (byte* outputPtr = output)
             {
-                char* currentInput = inputPtr;
-                byte* currentOutput = outputPtr;
-                byte* endOutput = outputPtr + output.Length;
+                var buffer = 0;
+                var bitsLeft = 0;
+                var outputIndex = 0;
 
-                int buffer = 0;
-                int bitsLeft = 0;
-
-                while (currentInput < inputPtr + length)
+                for (var i = 0; i < effectiveLength; i++)
                 {
-                    char c = *currentInput++;
-                    if (!_reverseLookup.TryGetValue(c, out byte value))
-                        throw new FormatException($"Invalid character in Base32 string: {c}");
+                    var c = inputPtr[i];
+                    if (c >= 256 || LookupTable[c] == 0xFF)
+                        throw new ArgumentException($"Invalid character: {c}");
 
-                    buffer = (buffer << BitsPerChar) | value;
-                    bitsLeft += BitsPerChar;
+                    buffer = (buffer << 5) | LookupTable[c];
+                    bitsLeft += 5;
 
-                    while (bitsLeft >= 8 && currentOutput < endOutput)
+                    if (bitsLeft >= 8)
                     {
                         bitsLeft -= 8;
-                        *currentOutput++ = (byte)((buffer >> bitsLeft) & 0xFF);
+                        outputPtr[outputIndex++] = (byte)((buffer >> bitsLeft) & 0xFF);
                     }
                 }
             }
