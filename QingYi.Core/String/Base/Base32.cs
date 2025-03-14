@@ -2,11 +2,13 @@
 
 namespace QingYi.Core.String.Base
 {
-    public static class Base32
+    public class Base32
     {
         public static string Encode(string input, StringEncoding encoding = StringEncoding.UTF8) => Base32RFC4648.Encode(input, encoding);
 
         public static string Decode(string input, StringEncoding encoding = StringEncoding.UTF8) => Base32RFC4648.Decode(input, encoding);
+
+        public override string ToString() => "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
         [Flags]
         public enum Alphabet

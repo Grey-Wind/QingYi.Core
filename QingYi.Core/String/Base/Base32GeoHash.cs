@@ -5,7 +5,7 @@ using System.Text;
 
 namespace QingYi.Core.String.Base
 {
-    public static class Base32GeoHash
+    public class Base32GeoHash
     {
         private const string Base32Chars = "0123456789bcdefghjkmnpqrstuvwxyz";
         private static readonly char[] EncodeTable = Base32Chars.ToCharArray();
@@ -19,6 +19,8 @@ namespace QingYi.Core.String.Base
                 DecodeTable[EncodeTable[i]] = i;
             }
         }
+
+        public override string ToString() => Base32Chars;
 
         public static string Encode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {

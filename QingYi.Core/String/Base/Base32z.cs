@@ -5,7 +5,7 @@ using System;
 
 namespace QingYi.Core.String.Base
 {
-    public static class Base32z
+    public class Base32z
     {
         private const string ZBase32Chars = "ybndrfg8ejkmcpqxot1uwisza345h769";
         private static readonly byte[] ReverseTable = new byte[128];
@@ -23,6 +23,8 @@ namespace QingYi.Core.String.Base
                 ReverseTable[c] = i;
             }
         }
+
+        public override string ToString() => ZBase32Chars;
 
         public static string Encode(string input, StringEncoding encoding)
         {

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace QingYi.Core.String.Base
 {
-    public static class Base32ExtendedHex
+    public class Base32ExtendedHex
     {
         private const string Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
         private const char PaddingChar = '=';
@@ -18,6 +18,8 @@ namespace QingYi.Core.String.Base
                 DecodeMap[Alphabet[i]] = i;
             DecodeMap[PaddingChar] = 0xFE;
         }
+
+        public override string ToString() => Alphabet;
 
         public static string Encode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {

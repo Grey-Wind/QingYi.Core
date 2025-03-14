@@ -5,7 +5,7 @@ using System.Text;
 
 namespace QingYi.Core.String.Base
 {
-    public static class Base32RFC4648
+    public class Base32RFC4648
     {
         private const string Base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
         private static readonly byte[] DecodeTable = new byte[128];
@@ -17,6 +17,8 @@ namespace QingYi.Core.String.Base
             for (int i = 0; i < Base32Chars.Length; i++)
                 DecodeTable[Base32Chars[i]] = (byte)i;
         }
+
+        public override string ToString() => Base32Chars;
 
         public static string Encode(string input, StringEncoding encoding)
         {
