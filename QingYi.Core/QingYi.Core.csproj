@@ -129,9 +129,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="EnvironmentVariable\User\" />
+    <Folder Include="EnvironmentVariable\System\" />
     <Folder Include="FileUtility\UserProfile\AppData\" />
     <Folder Include="Network\" />
-    <Folder Include="EnvironmentVariable\" />
     <Folder Include="String\Encoding\" />
   </ItemGroup>
 
