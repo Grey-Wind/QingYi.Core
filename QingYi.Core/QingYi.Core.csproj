@@ -127,6 +127,7 @@
     <Folder Include="Network\" />
     <Folder Include="EnvironmentVariable\" />
     <Folder Include="String\Encoding\" />
+    <Folder Include="PowerSettings\" />
   </ItemGroup>
 
 </Project>
