@@ -1,5 +1,5 @@
 ﻿#if NET6_0_OR_GREATER
-#pragma warning disable CA2014
+#pragma warning disable CA2014, CS0618, SYSLIB0001
 #nullable enable
 using System;
 using System.Buffers;
@@ -299,6 +299,9 @@ namespace QingYi.Core.String.Base
                 StringEncoding.UTF32 => Encoding.UTF32,
                 StringEncoding.UTF7 => Encoding.UTF7,
                 StringEncoding.ASCII => Encoding.ASCII,
+#if NET6_0_OR_GREATER
+                StringEncoding.Latin1 => Encoding.Latin1,
+#endif
                 _ => throw new ArgumentOutOfRangeException(nameof(encoding), encoding, null)
             };
         }
