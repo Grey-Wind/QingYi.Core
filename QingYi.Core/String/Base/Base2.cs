@@ -211,6 +211,10 @@ namespace QingYi.Core.String.Base
         }
     }
 
+    /// <summary>
+    /// Static string extension of Base2 codec library.<br />
+    /// Base2 编解码库的静态字符串拓展。
+    /// </summary>
     public static class Base2Extension
     {
         /// <summary>

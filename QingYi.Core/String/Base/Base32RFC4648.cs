@@ -5,6 +5,10 @@ using System.Text;
 
 namespace QingYi.Core.String.Base
 {
+    /// <summary>
+    /// Base32 codec library (RFC4648).<br />
+    /// Base32 编解码库（RFC4648）。
+    /// </summary>
     public class Base32RFC4648
     {
         private const string Base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -18,8 +22,20 @@ namespace QingYi.Core.String.Base
                 DecodeTable[Base32Chars[i]] = (byte)i;
         }
 
+        /// <summary>
+        /// Gets the base32-encoded character set.<br />
+        /// 获取 Base32 编码的字符集。
+        /// </summary>
+        /// <returns>The base32-encoded character set.<br />Base32 编码的字符集</returns>
         public override string ToString() => Base32Chars;
 
+        /// <summary>
+        /// Base36 encoding of the string.<br />
+        /// 将字符串进行Base32编码。
+        /// </summary>
+        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The encoded string.<br />被编码的字符串</returns>
         public static string Encode(string input, StringEncoding encoding)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
@@ -27,6 +43,13 @@ namespace QingYi.Core.String.Base
             return EncodeInternal(bytes);
         }
 
+        /// <summary>
+        /// Base36 decoding of the string.<br />
+        /// 将字符串进行Base32解码。
+        /// </summary>
+        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The decoded string.<br />被解码的字符串</returns>
         public static string Decode(string input, StringEncoding encoding)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));

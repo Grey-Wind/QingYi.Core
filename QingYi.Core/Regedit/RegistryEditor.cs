@@ -1,5 +1,5 @@
 ﻿#if !BROWSER && NET6_0_OR_GREATER
-#pragma warning disable CA1416
+#pragma warning disable CA1416, CA1861, CA1869, CA1872
 using System;
 using System.Text;
 using Microsoft.Win32;
@@ -17,12 +17,26 @@ namespace QingYi.Core.Regedit
     public static class RegistryEditor
     {
         #region 基本操作
+        /// <summary>
+        /// Creates a new registry key at the specified path.<br />
+        /// 在指定路径创建一个新的注册表键。
+        /// </summary>
+        /// <param name="keyPath">The path where the key should be created.<br />应该在其中创建密钥的路径。</param>
+        /// <param name="useAdmin">Indicates whether administrative permissions are required.<br />指示是否需要管理权限。</param>
+        /// <param name="view">Specifies the registry view (32-bit or 64-bit).<br />指定注册表视图（32位或64位）。</param>
         public static void CreateKey(string keyPath, bool useAdmin = false, RegistryView view = RegistryView.Default)
         {
             CheckAdminPermission(useAdmin);
             using var key = CreateParentKey(keyPath, useAdmin, view, true);
         }
 
+        /// <summary>
+        /// Deletes the registry key at the specified path.<br />
+        /// 删除指定路径的注册表键。
+        /// </summary>
+        /// <param name="keyPath">The path of the key to delete.<br />要删除的密钥路径。</param>
+        /// <param name="useAdmin">Indicates whether administrative permissions are required.<br />指示是否需要管理权限。</param>
+        /// <param name="view">Specifies the registry view (32-bit or 64-bit).<br />指定注册表视图（32位或64位）。</param>
         public static void DeleteKey(string keyPath, bool useAdmin = false, RegistryView view = RegistryView.Default)
         {
             CheckAdminPermission(useAdmin);
@@ -31,6 +45,16 @@ namespace QingYi.Core.Regedit
             parentKey.DeleteSubKeyTree(keyName);
         }
 
+        /// <summary>
+        /// Sets a value for a registry key.<br />
+        /// 为注册表键设置一个值。
+        /// </summary>
+        /// <param name="keyPath">The path of the key to set the value for.<br />要为其设置值的键的路径。</param>
+        /// <param name="valueName">The name of the value to set.<br />要设置的值的名称。</param>
+        /// <param name="value">The value to set.<br />要设置的值。</param>
+        /// <param name="kind">The type of the value (e.g., String, DWord, etc.).<br />值的类型（例如，String， DWord等）。</param>
+        /// <param name="useAdmin">Indicates whether administrative permissions are required.<br />指示是否需要管理权限。</param>
+        /// <param name="view">Specifies the registry view (32-bit or 64-bit).<br />指定注册表视图（32位或64位）。</param>
         public static void SetValue(string keyPath, string valueName, object value, RegistryValueKind kind, bool useAdmin = false, RegistryView view = RegistryView.Default)
         {
             CheckAdminPermission(useAdmin);
@@ -38,12 +62,29 @@ namespace QingYi.Core.Regedit
             key.SetValue(valueName, value, kind);
         }
 
+        /// <summary>
+        /// Retrieves the value of a registry key.<br />
+        /// 获取注册表键的值。
+        /// </summary>
+        /// <param name="keyPath">The path of the key to retrieve the value from.<br />要从中检索值的键的路径。</param>
+        /// <param name="valueName">The name of the value to retrieve.<br />要检索的值的名称。</param>
+        /// <param name="useAdmin">Indicates whether administrative permissions are required.<br />指示是否需要管理权限。</param>
+        /// <param name="view">Specifies the registry view (32-bit or 64-bit).<br />指定注册表视图（32位或64位）。</param>
+        /// <returns>The value of the registry key.<br />注册表项的值。</returns>
         public static object GetValue(string keyPath, string valueName, bool useAdmin = false, RegistryView view = RegistryView.Default)
         {
             using var key = OpenKey(keyPath, false, useAdmin, view);
             return key.GetValue(valueName);
         }
 
+        /// <summary>
+        /// Deletes a value from a registry key.<br />
+        /// 删除注册表键中的值。
+        /// </summary>
+        /// <param name="keyPath">The path of the key to delete the value from.<br />要从中删除值的键的路径。</param>
+        /// <param name="valueName">The name of the value to delete.<br />要删除的值的名称。</param>
+        /// <param name="useAdmin">Indicates whether administrative permissions are required.<br />指示是否需要管理权限。</param>
+        /// <param name="view">Specifies the registry view (32-bit or 64-bit).<br />指定注册表视图（32位或64位）。</param>
         public static void DeleteValue(string keyPath, string valueName, bool useAdmin = false, RegistryView view = RegistryView.Default)
         {
             CheckAdminPermission(useAdmin);
@@ -51,6 +92,15 @@ namespace QingYi.Core.Regedit
             key.DeleteValue(valueName);
         }
 
+        /// <summary>
+        /// Renames a value in a registry key.<br />
+        /// 重命名注册表键中的值。
+        /// </summary>
+        /// <param name="keyPath">The path of the key containing the value to rename.<br />包含要重命名的值的键的路径。</param>
+        /// <param name="oldName">The current name of the value.<br />值的当前名称。</param>
+        /// <param name="newName">The new name of the value.<br />值的新名称。</param>
+        /// <param name="useAdmin">Indicates whether administrative permissions are required.<br />指示是否需要管理权限。</param>
+        /// <param name="view">Specifies the registry view (32-bit or 64-bit).<br />指定注册表视图（32位或64位）。</param>
         public static void RenameValue(string keyPath, string oldName, string newName, bool useAdmin = false, RegistryView view = RegistryView.Default)
         {
             CheckAdminPermission(useAdmin);
@@ -61,6 +111,14 @@ namespace QingYi.Core.Regedit
             key.SetValue(newName, value, kind);
         }
 
+        /// <summary>
+        /// Renames a registry key by copying it to a new path and deleting the original key.<br />
+        /// 通过将注册表键复制到新路径并删除原键来重命名注册表键。
+        /// </summary>
+        /// <param name="oldPath">The current path of the key.<br />密钥的当前路径。</param>
+        /// <param name="newPath">The new path for the key.<br />密钥的新路径。</param>
+        /// <param name="useAdmin">Indicates whether administrative permissions are required.<br />指示是否需要管理权限。</param>
+        /// <param name="view">Specifies the registry view (32-bit or 64-bit).<br />指定注册表视图（32位或64位）。</param>
         public static void RenameKey(string oldPath, string newPath, bool useAdmin = false, RegistryView view = RegistryView.Default)
         {
             CheckAdminPermission(useAdmin);
@@ -70,6 +128,14 @@ namespace QingYi.Core.Regedit
         #endregion
 
         #region 导入导出
+        /// <summary>
+        /// Exports a registry key to a REG file format as a string.<br />
+        /// 将注册表键导出为REG文件格式的字符串。
+        /// </summary>
+        /// <param name="keyPath">The path of the registry key to export.<br />要导出的注册表项路径。</param>
+        /// <param name="useAdmin">Indicates whether administrative permissions are required.<br />指示是否需要管理权限。</param>
+        /// <param name="view">Specifies the registry view (32-bit or 64-bit).<br />指定注册表视图（32位或64位）。</param>
+        /// <returns>A string representing the exported registry key in REG file format.<br />以REG文件格式表示导出的注册表项的字符串。</returns>
         public static string ExportToReg(string keyPath, bool useAdmin = false, RegistryView view = RegistryView.Default)
         {
             var sb = new StringBuilder();
@@ -78,6 +144,13 @@ namespace QingYi.Core.Regedit
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Imports a registry key from a REG file content.<br />
+        /// 从REG文件内容导入注册表键。
+        /// </summary>
+        /// <param name="regContent">The REG file content as a string.<br />将REG文件内容作为字符串。</param>
+        /// <param name="useAdmin">Indicates whether administrative permissions are required.<br />指示是否需要管理权限。</param>
+        /// <param name="view">Specifies the registry view (32-bit or 64-bit).<br />指定注册表视图（32位或64位）。</param>
         public static void ImportFromReg(string regContent, bool useAdmin = false, RegistryView view = RegistryView.Default)
         {
             // 简化的REG文件解析实现
@@ -86,7 +159,7 @@ namespace QingYi.Core.Regedit
 
             foreach (var line in lines)
             {
-                if (line.StartsWith("["))
+                if (line.StartsWith('['))
                 {
                     currentKey = line.Trim('[', ']');
                     CreateKey(currentKey, useAdmin, view);
@@ -98,31 +171,46 @@ namespace QingYi.Core.Regedit
             }
         }
 
-    public static string ExportToJson(string keyPath, bool useAdmin = false, RegistryView view = RegistryView.Default)
-    {
-        var exportData = new RegistryKeyData { KeyPath = keyPath, Values = new List<RegistryValueData>() };
-        
-        using (var key = OpenKey(keyPath, false, useAdmin, view))
+        /// <summary>
+        /// Exports a registry key to JSON format.<br />
+        /// 将注册表键导出为JSON格式。
+        /// </summary>
+        /// <param name="keyPath">The path of the registry key to export.<br />要导出的注册表项路径。</param>
+        /// <param name="useAdmin">Indicates whether administrative permissions are required.<br />指示是否需要管理权限。</param>
+        /// <param name="view">Specifies the registry view (32-bit or 64-bit).<br />指定注册表视图（32位或64位）。</param>
+        /// <returns>A string representing the exported registry key in JSON format.<br />以JSON格式表示导出的注册表项的字符串。</returns>
+        public static string ExportToJson(string keyPath, bool useAdmin = false, RegistryView view = RegistryView.Default)
         {
-            foreach (var valueName in key.GetValueNames())
+            var exportData = new RegistryKeyData { KeyPath = keyPath, Values = new List<RegistryValueData>() };
+
+            using (var key = OpenKey(keyPath, false, useAdmin, view))
             {
-                var value = key.GetValue(valueName);
-                var kind = key.GetValueKind(valueName);
-                exportData.Values.Add(CreateValueData(valueName, value, kind));
+                foreach (var valueName in key.GetValueNames())
+                {
+                    var value = key.GetValue(valueName);
+                    var kind = key.GetValueKind(valueName);
+                    exportData.Values.Add(CreateValueData(valueName, value, kind));
+                }
+            }
+
+            return JsonSerializer.Serialize(exportData, new JsonSerializerOptions { WriteIndented = true });
+        }
+
+        /// <summary>
+        /// Imports a registry key from a JSON string.<br />
+        /// 从JSON字符串导入注册表键。
+        /// </summary>
+        /// <param name="json">The JSON content representing the registry key.<br />表示注册表项的JSON内容。</param>
+        /// <param name="useAdmin">Indicates whether administrative permissions are required.<br />指示是否需要管理权限。</param>
+        /// <param name="view">Specifies the registry view (32-bit or 64-bit).<br />指定注册表视图（32位或64位）。</param>
+        public static void ImportFromJson(string json, bool useAdmin = false, RegistryView view = RegistryView.Default)
+        {
+            var data = JsonSerializer.Deserialize<RegistryKeyData>(json);
+            foreach (var value in data.Values)
+            {
+                SetValue(data.KeyPath, value.Name, ParseValueData(value), value.Kind, useAdmin, view);
             }
         }
-
-        return JsonSerializer.Serialize(exportData, new JsonSerializerOptions { WriteIndented = true });
-    }
-
-    public static void ImportFromJson(string json, bool useAdmin = false, RegistryView view = RegistryView.Default)
-    {
-        var data = JsonSerializer.Deserialize<RegistryKeyData>(json);
-        foreach (var value in data.Values)
-        {
-            SetValue(data.KeyPath, value.Name, ParseValueData(value), value.Kind, useAdmin, view);
-        }
-    }
         #endregion
 
         #region 私有方法
@@ -251,7 +339,7 @@ namespace QingYi.Core.Regedit
             if (valueData.StartsWith("hex:"))
                 return (RegistryValueKind.Binary, HexToBytes(valueData[4..]));
 
-            if (valueData.StartsWith("\""))
+            if (valueData.StartsWith('\"'))
                 return (RegistryValueKind.String, valueData.Trim('"'));
 
             return (RegistryValueKind.String, valueData);

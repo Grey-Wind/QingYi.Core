@@ -1,4 +1,6 @@
 ﻿#if NET6_0_OR_GREATER
+#pragma warning disable CA2014, CS0618, SYSLIB0001
+#nullable enable
 using System;
 using System.Buffers;
 using System.Reflection.Emit;
@@ -8,21 +10,19 @@ using System.Text;
 
 namespace QingYi.Core.String.Base
 {
+    /// <summary>
+    /// Base36 codec library.<br />
+    /// Base36 编解码库。
+    /// </summary>
     public unsafe class Base36
     {
         private const string Base36Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const int ByteSize = 256;
         private const int Base = 36;
 
-        private static readonly uint[] _pow36 = {
-            1, 36, 1296, 46656, 1679616, 60466176, 2176782336
-        };
+        private static readonly uint[] _pow36 = { 1, 36, 1296, 46656, 1679616, 60466176, 2176782336 };
 
         private static readonly int[] _reverseBase36Map = new int[ByteSize];
-        private static readonly DynamicMethod _reverseBytesMethod;
-
-        // 使用函数指针进一步提升性能（需要C# 9.0+）
-        private static readonly delegate*<byte*, int, void> _reverseBytesPtr;
 
         static Base36()
         {
@@ -36,7 +36,21 @@ namespace QingYi.Core.String.Base
             }
         }
 
-        public static string Encode(string input, StringEncoding encoding)
+        /// <summary>
+        /// Gets the base36-encoded character set.<br />
+        /// 获取 Base36 编码的字符集。
+        /// </summary>
+        /// <returns>The base36-encoded character set.<br />Base36 编码的字符集</returns>
+        public override string ToString() => Base36Chars;
+
+        /// <summary>
+        /// Base36 encoding of the string.<br />
+        /// 将字符串进行Base36编码。
+        /// </summary>
+        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The encoded string.<br />被编码的字符串</returns>
+        public static string Encode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (string.IsNullOrEmpty(input)) return string.Empty;
 
@@ -44,7 +58,14 @@ namespace QingYi.Core.String.Base
             return Encode(bytes);
         }
 
-        public static string Decode(string input, StringEncoding encoding)
+        /// <summary>
+        /// Base36 decoding of the string.<br />
+        /// 将字符串进行Base36解码。
+        /// </summary>
+        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The decoded string.<br />被解码的字符串</returns>
+        public static string Decode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (string.IsNullOrEmpty(input)) return string.Empty;
 
@@ -174,9 +195,7 @@ namespace QingYi.Core.String.Base
         {
             for (int i = 0; i < length / 2; i++)
             {
-                byte temp = bytes[i];
-                bytes[i] = bytes[length - i - 1];
-                bytes[length - i - 1] = temp;
+                (bytes[length - i - 1], bytes[i]) = (bytes[i], bytes[length - i - 1]);
             }
         }
 
@@ -223,8 +242,7 @@ namespace QingYi.Core.String.Base
 
         private static byte[] InternalDecode(char* charsPtr, int length)
         {
-            const int initialBufferSize = 64; // 初始缓冲区大小
-            Span<byte> result = stackalloc byte[initialBufferSize];
+            Span<byte> result = stackalloc byte[64]; // 初始缓冲区大小 64
             int resultIndex = 0;
 
             for (int i = 0; i < length; i++)
@@ -304,6 +322,9 @@ namespace QingYi.Core.String.Base
                 StringEncoding.UTF32 => Encoding.UTF32,
                 StringEncoding.UTF7 => Encoding.UTF7,
                 StringEncoding.ASCII => Encoding.ASCII,
+#if NET6_0_OR_GREATER
+                StringEncoding.Latin1 => Encoding.Latin1,
+#endif
                 _ => throw new ArgumentOutOfRangeException(nameof(encoding), encoding, null)
             };
         }
@@ -334,6 +355,31 @@ namespace QingYi.Core.String.Base
                 (arr[length - i - 1], arr[i]) = (arr[i], arr[length - i - 1]);
             }
         }
+    }
+
+    /// <summary>
+    /// Static string extension of Base36 codec library.<br />
+    /// Base36 编解码库的静态字符串拓展。
+    /// </summary>
+    public static class Base36Extension
+    {
+        /// <summary>
+        /// Base36 encoding of the string.<br />
+        /// 将字符串进行Base36编码。
+        /// </summary>
+        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The encoded string.<br />被编码的字符串</returns>
+        public static string EncodeBase36(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base36.Encode(input, encoding);
+
+        /// <summary>
+        /// Base36 decoding of the string.<br />
+        /// 将字符串进行Base36解码。
+        /// </summary>
+        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The decoded string.<br />被解码的字符串</returns>
+        public static string DecodeBase36(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base36.Decode(input, encoding);
     }
 }
 #endif

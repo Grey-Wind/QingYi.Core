@@ -5,6 +5,10 @@ using System;
 
 namespace QingYi.Core.String.Base
 {
+    /// <summary>
+    /// Base32 codec library (Word-safe alphabet).<br />
+    /// Base32 编解码库（Word-safe alphabet）。
+    /// </summary>
     public class Base32WordSafe
     {
         private const string Alphabet = "23456789CFGHJMPQRVWXcfghjmpqrvwx";
@@ -18,8 +22,20 @@ namespace QingYi.Core.String.Base
                 LookupTable[Alphabet[i]] = (byte)i;
         }
 
+        /// <summary>
+        /// Gets the base32-encoded character set.<br />
+        /// 获取 Base32 编码的字符集。
+        /// </summary>
+        /// <returns>The base32-encoded character set.<br />Base32 编码的字符集</returns>
         public override string ToString() => Alphabet;
 
+        /// <summary>
+        /// Base36 encoding of the string.<br />
+        /// 将字符串进行Base32编码。
+        /// </summary>
+        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The encoded string.<br />被编码的字符串</returns>
         public static string Encode(string input, StringEncoding encoding)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
@@ -27,6 +43,13 @@ namespace QingYi.Core.String.Base
             return ConvertToBase32(bytes);
         }
 
+        /// <summary>
+        /// Base36 decoding of the string.<br />
+        /// 将字符串进行Base32解码。
+        /// </summary>
+        /// <param name="base32Input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The decoded string.<br />被解码的字符串</returns>
         public static string Decode(string base32Input, StringEncoding encoding)
         {
             if (base32Input == null) throw new ArgumentNullException(nameof(base32Input));
