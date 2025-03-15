@@ -5,6 +5,10 @@ using System.Text;
 
 namespace QingYi.Core.String.Base
 {
+    /// <summary>
+    /// Base32 codec library (Base 32 Encoding with Extended Hex Alphabet per §7).<br />
+    /// Base32 编解码库（基于十六进制扩展的 Base 32 编码字母表 §7）。
+    /// </summary>
     public class Base32ExtendedHex
     {
         private const string Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
@@ -19,8 +23,20 @@ namespace QingYi.Core.String.Base
             DecodeMap[PaddingChar] = 0xFE;
         }
 
+        /// <summary>
+        /// Gets the base32-encoded character set.<br />
+        /// 获取 Base32 编码的字符集。
+        /// </summary>
+        /// <returns>The base32-encoded character set.<br />Base32 编码的字符集</returns>
         public override string ToString() => Alphabet;
 
+        /// <summary>
+        /// Base36 encoding of the string.<br />
+        /// 将字符串进行Base32编码。
+        /// </summary>
+        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The encoded string.<br />被编码的字符串</returns>
         public static string Encode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
@@ -28,6 +44,13 @@ namespace QingYi.Core.String.Base
             return ConvertToBase32(bytes);
         }
 
+        /// <summary>
+        /// Base36 decoding of the string.<br />
+        /// 将字符串进行Base32解码。
+        /// </summary>
+        /// <param name="base32">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The decoded string.<br />被解码的字符串</returns>
         public static string Decode(string base32, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (base32 == null) throw new ArgumentNullException(nameof(base32));

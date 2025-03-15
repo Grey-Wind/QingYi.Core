@@ -1,16 +1,14 @@
-﻿using System;
+﻿#if !WINDOWS && !BROWSER
+using System;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
-#if !WINDOWS && !BROWSER
 namespace QingYi.Core.Shell
 {
     public static partial class ShellHelper
     {
-        private static async Task<ShellResult> ExecuteUnixCommandAsync(
-            string command,
-            bool useAdmin)
+        private static async Task<ShellResult> ExecuteUnixCommandAsync(string command, bool useAdmin)
         {
             var result = new ShellResult();
             var startInfo = new ProcessStartInfo

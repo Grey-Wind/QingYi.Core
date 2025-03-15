@@ -6,6 +6,10 @@ using System.Text;
 
 namespace QingYi.Core.String.Base
 {
+    /// <summary>
+    /// Base32 codec library (Crockford's Base32).<br />
+    /// Base32 编解码库（Crockford's Base32）。
+    /// </summary>
     public class Base32Crockford
     {
         private const string Alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -26,8 +30,20 @@ namespace QingYi.Core.String.Base
             CharMap['L'] = 1; CharMap['l'] = 1;
         }
 
+        /// <summary>
+        /// Gets the base32-encoded character set.<br />
+        /// 获取 Base32 编码的字符集。
+        /// </summary>
+        /// <returns>The base32-encoded character set.<br />Base32 编码的字符集</returns>
         public override string ToString() => Alphabet;
 
+        /// <summary>
+        /// Base36 encoding of the string.<br />
+        /// 将字符串进行Base32编码。
+        /// </summary>
+        /// <param name="source">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encodingType">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The encoded string.<br />被编码的字符串</returns>
         public static string Encode(string source, StringEncoding encodingType = StringEncoding.UTF8)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -37,6 +53,13 @@ namespace QingYi.Core.String.Base
             return EncodeBytes(bytes);
         }
 
+        /// <summary>
+        /// Base36 decoding of the string.<br />
+        /// 将字符串进行Base32解码。
+        /// </summary>
+        /// <param name="encoded">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encodingType">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The decoded string.<br />被解码的字符串</returns>
         public static string Decode(string encoded, StringEncoding encodingType = StringEncoding.UTF8)
         {
             if (encoded == null) throw new ArgumentNullException(nameof(encoded));

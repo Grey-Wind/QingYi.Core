@@ -51,6 +51,11 @@ namespace QingYi.Core.String.Base
             Base64Inv['='] = 0;
         }
 
+        /// <summary>
+        /// Gets the base64-encoded character set.<br />
+        /// 获取 Base64 编码的字符集。
+        /// </summary>
+        /// <returns>The base64-encoded character set.<br />Base64 编码的字符集</returns>
         public override string ToString() => Base64Chars;
 
         /// <summary>
@@ -236,6 +241,11 @@ namespace QingYi.Core.String.Base
             s_decodeTable['='] = 0; // 特殊处理填充字符
         }
 
+        /// <summary>
+        /// Gets the base64-encoded character set.<br />
+        /// 获取 Base64 编码的字符集。
+        /// </summary>
+        /// <returns>The base64-encoded character set.<br />Base64 编码的字符集</returns>
         public override string ToString() => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
         // Base64编码（字符串→Base64字符串）
