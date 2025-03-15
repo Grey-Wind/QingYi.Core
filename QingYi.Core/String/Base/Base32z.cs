@@ -5,6 +5,10 @@ using System;
 
 namespace QingYi.Core.String.Base
 {
+    /// <summary>
+    /// Base32 codec library (z-base-32).<br />
+    /// Base32 编解码库（z-base-32）。
+    /// </summary>
     public class Base32z
     {
         private const string ZBase32Chars = "ybndrfg8ejkmcpqxot1uwisza345h769";
