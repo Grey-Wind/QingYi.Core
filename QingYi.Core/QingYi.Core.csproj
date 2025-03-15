@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net6.0-windows;net7.0-windows;net8.0-windows;net9.0-windows;net9.0-browser</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>QingYi.Core</Title>
-    <Version>5.1.0-pre2</Version>
+    <Version>5.1.0</Version>
     <Authors>QingYi-Studio</Authors>
     <Copyright>AGPL-3.0</Copyright>
     <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Core</PackageProjectUrl>
@@ -13,7 +13,7 @@
     <Description>The core of our other projects.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageTags>QingYi;Core;Shell;Folder;File</PackageTags>
+    <PackageTags>QingYi;Core;Shell;Folder;File;Compression;Compress;Network;RegeditlPower</PackageTags>
     <NuGetAudit>False</NuGetAudit>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -96,6 +96,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="PowerSettings\**" />
+    <EmbeddedResource Remove="PowerSettings\**" />
+    <None Remove="PowerSettings\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="icon.png" />
     <None Remove="readme.md" />
     <None Remove="Shell\How-To-Use.md" />
@@ -127,7 +133,6 @@
     <Folder Include="Network\" />
     <Folder Include="EnvironmentVariable\" />
     <Folder Include="String\Encoding\" />
-    <Folder Include="PowerSettings\" />
   </ItemGroup>
 
 </Project>
