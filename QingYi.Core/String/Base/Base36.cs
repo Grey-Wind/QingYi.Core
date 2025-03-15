@@ -16,9 +16,7 @@ namespace QingYi.Core.String.Base
         private const int ByteSize = 256;
         private const int Base = 36;
 
-        private static readonly uint[] _pow36 = {
-            1, 36, 1296, 46656, 1679616, 60466176, 2176782336
-        };
+        private static readonly uint[] _pow36 = { 1, 36, 1296, 46656, 1679616, 60466176, 2176782336 };
 
         private static readonly int[] _reverseBase36Map = new int[ByteSize];
 
@@ -34,7 +32,7 @@ namespace QingYi.Core.String.Base
             }
         }
 
-        public static string Encode(string input, StringEncoding encoding)
+        public static string Encode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (string.IsNullOrEmpty(input)) return string.Empty;
 
@@ -42,7 +40,7 @@ namespace QingYi.Core.String.Base
             return Encode(bytes);
         }
 
-        public static string Decode(string input, StringEncoding encoding)
+        public static string Decode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (string.IsNullOrEmpty(input)) return string.Empty;
 
@@ -332,6 +330,13 @@ namespace QingYi.Core.String.Base
                 (arr[length - i - 1], arr[i]) = (arr[i], arr[length - i - 1]);
             }
         }
+    }
+
+    public static class Base36Extension
+    {
+        public static string EncodeBase36(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base36.Encode(input, encoding);
+
+        public static string DecodeBase36(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base36.Decode(input, encoding);
     }
 }
 #endif
