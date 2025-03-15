@@ -1,4 +1,6 @@
 ﻿#if NET6_0_OR_GREATER
+#pragma warning disable CA2014
+#nullable enable
 using System;
 using System.Buffers;
 using System.Reflection.Emit;
@@ -19,10 +21,6 @@ namespace QingYi.Core.String.Base
         };
 
         private static readonly int[] _reverseBase36Map = new int[ByteSize];
-        private static readonly DynamicMethod _reverseBytesMethod;
-
-        // 使用函数指针进一步提升性能（需要C# 9.0+）
-        private static readonly delegate*<byte*, int, void> _reverseBytesPtr;
 
         static Base36()
         {
@@ -174,9 +172,7 @@ namespace QingYi.Core.String.Base
         {
             for (int i = 0; i < length / 2; i++)
             {
-                byte temp = bytes[i];
-                bytes[i] = bytes[length - i - 1];
-                bytes[length - i - 1] = temp;
+                (bytes[length - i - 1], bytes[i]) = (bytes[i], bytes[length - i - 1]);
             }
         }
 
@@ -223,8 +219,7 @@ namespace QingYi.Core.String.Base
 
         private static byte[] InternalDecode(char* charsPtr, int length)
         {
-            const int initialBufferSize = 64; // 初始缓冲区大小
-            Span<byte> result = stackalloc byte[initialBufferSize];
+            Span<byte> result = stackalloc byte[64]; // 初始缓冲区大小 64
             int resultIndex = 0;
 
             for (int i = 0; i < length; i++)
