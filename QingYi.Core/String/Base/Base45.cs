@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Text;
 using System.Text;
 
 #pragma warning disable CA1510, CS0618, SYSLIB0001, IDE0300, IDE0301
@@ -175,5 +176,30 @@ namespace QingYi.Core.String.Base
                 _ => throw new NotSupportedException("Unsupported encoding"),
             };
         }
+    }
+
+    /// <summary>
+    /// Static string extension of Base36 codec library.<br />
+    /// Base45 编解码库的静态字符串拓展。
+    /// </summary>
+    public static class Base45Extension
+    {
+        /// <summary>
+        /// Base36 encoding of the string.<br />
+        /// 将字符串进行 Base45 编码。
+        /// </summary>
+        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The encoded string.<br />被编码的字符串</returns>
+        public static string EncodeBase45(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base45.Encode(input, encoding);
+
+        /// <summary>
+        /// Base36 decoding of the string.<br />
+        /// 将字符串进行 Base45 解码。
+        /// </summary>
+        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The decoded string.<br />被解码的字符串</returns>
+        public static string DecodeBase45(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base45.Decode(input, encoding);
     }
 }
