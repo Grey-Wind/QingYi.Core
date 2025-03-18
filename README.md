@@ -15,3 +15,25 @@ Nuget link: https://www.nuget.org/packages/QingYi.Core
 The core of our other projects.
 
 This project also has a lot of utility features, such as Base encoding, file information retrieval, file/folder compression, Shell, etc.
+
+## Installing
+
+.NET Cli
+
+```sh
+dotnet add package QingYi.Core
+```
+
+Package Manager
+
+```TEXT
+NuGet\Install-Package QingYi.Core
+```
+
+## Feedback 
+
+For bug reporting/requests you can report issues on [github](https://github.com/QingYi-Studio/QingYi.Co're/issue) if required.
+
+## Finally
+
+Enjoy!

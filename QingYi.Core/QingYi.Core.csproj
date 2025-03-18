@@ -4,16 +4,17 @@
     <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net6.0-windows;net7.0-windows;net8.0-windows;net9.0-windows;net9.0-browser</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>QingYi.Core</Title>
-    <Version>5.1.0-pre2</Version>
+    <Version>5.1.0</Version>
     <Authors>QingYi-Studio</Authors>
     <Copyright>AGPL-3.0</Copyright>
     <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Core</PackageProjectUrl>
     <RepositoryUrl>https://github.com/QingYi-Studio/QingYi.Core</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Description>The core of our other projects.</Description>
+    <Description>The core of our other projects.
+This project also has a lot of utility features, such as Base encoding, file information retrieval, file/folder compression, Shell, etc.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageTags>QingYi;Core;Shell;Folder;File</PackageTags>
+    <PackageTags>QingYi;Base;Base2;Base32;Base36;Base45;Base64;Encode;Shell;Folder;File;Compress;Network;Regedit;Power</PackageTags>
     <NuGetAudit>False</NuGetAudit>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -96,6 +97,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="PowerSettings\**" />
+    <EmbeddedResource Remove="PowerSettings\**" />
+    <None Remove="PowerSettings\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="icon.png" />
     <None Remove="readme.md" />
     <None Remove="Shell\How-To-Use.md" />
@@ -123,11 +130,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="EnvironmentVariable\User\" />
+    <Folder Include="EnvironmentVariable\System\" />
     <Folder Include="FileUtility\UserProfile\AppData\" />
     <Folder Include="Network\" />
-    <Folder Include="EnvironmentVariable\" />
     <Folder Include="String\Encoding\" />
-    <Folder Include="PowerSettings\" />
   </ItemGroup>
 
 </Project>
