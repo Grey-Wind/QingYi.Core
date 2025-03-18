@@ -13,7 +13,7 @@
     <Description>The core of our other projects.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageTags>QingYi;Core;Shell;Folder;File;Compression;Compress;Network;RegeditlPower</PackageTags>
+    <PackageTags>QingYi;Base;Base2;Base32;Base36;Base45;Base64;Encode;Shell;Folder;File;Compress;Network;Regedit;Power</PackageTags>
     <NuGetAudit>False</NuGetAudit>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
