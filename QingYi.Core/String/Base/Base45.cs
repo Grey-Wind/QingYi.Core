@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers.Text;
 using System.Text;
 
 #pragma warning disable CA1510, CS0618, SYSLIB0001, IDE0300, IDE0301
@@ -179,13 +178,13 @@ namespace QingYi.Core.String.Base
     }
 
     /// <summary>
-    /// Static string extension of Base36 codec library.<br />
+    /// Static string extension of Base45 codec library.<br />
     /// Base45 编解码库的静态字符串拓展。
     /// </summary>
     public static class Base45Extension
     {
         /// <summary>
-        /// Base36 encoding of the string.<br />
+        /// Base45 encoding of the string.<br />
         /// 将字符串进行 Base45 编码。
         /// </summary>
         /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
@@ -194,7 +193,7 @@ namespace QingYi.Core.String.Base
         public static string EncodeBase45(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base45.Encode(input, encoding);
 
         /// <summary>
-        /// Base36 decoding of the string.<br />
+        /// Base45 decoding of the string.<br />
         /// 将字符串进行 Base45 解码。
         /// </summary>
         /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
