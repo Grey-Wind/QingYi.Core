@@ -283,6 +283,22 @@ namespace BaseTest
             #endregion
 
             #region Base62
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base62 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base62.Encode(testText)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base62.Decode(Base62.Encode(testText))}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base64
@@ -330,7 +346,7 @@ namespace BaseTest
 
             GC.Collect();
 
-            Console.ReadLine();
+            Console.ReadKey();
         }
     }
 }

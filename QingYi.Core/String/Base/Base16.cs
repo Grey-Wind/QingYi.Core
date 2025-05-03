@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System;
 
 namespace QingYi.Core.String.Base
@@ -161,5 +161,47 @@ namespace QingYi.Core.String.Base
                 default: throw new NotSupportedException($"Encoding {encoding} is not supported.");
             }
         }
+    }
+
+    /// <summary>
+    /// Static string extension of Base16 codec library.<br />
+    /// Base16 编解码库的静态字符串拓展。
+    /// </summary>
+    public static class Base16Extension
+    {
+        /// <summary>
+        /// Base16 encoding of the string.<br />
+        /// 将字符串进行Base16编码。
+        /// </summary>
+        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The encoded string.<br />被编码的字符串</returns>
+        public static string EncodeBase16(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base16.Encode(input, encoding);
+
+        /// <summary>
+        /// Base16 encoding of the bytes.<br />
+        /// 将字节数组进行Base16编码。
+        /// </summary>
+        /// <param name="bytes">The bytes to be converted.<br />需要转换的字节数组</param>
+        /// <param name="lowerCase">Use lowercase letters<br />使用小写字母</param>
+        /// <returns>The encoded string.<br />被编码的字符串</returns>
+        public static string EncodeBase16(byte[] bytes, bool lowerCase = false) => Base16.Encode(bytes, lowerCase);
+
+        /// <summary>
+        /// Base16 decoding of the string.<br />
+        /// 将字符串进行Base16解码。
+        /// </summary>
+        /// <param name="base16String">The string to be converted.<br />需要转换的字符串</param>
+        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
+        /// <returns>The decoded string.<br />被解码的字符串</returns>
+        public static string DecodeBase16(this string base16String, StringEncoding encoding = StringEncoding.UTF8) => Base16.Decode(base16String, encoding);
+
+        /// <summary>
+        /// Base16 decoding of the string.<br />
+        /// 将字符串进行Base16解码。
+        /// </summary>
+        /// <param name="base16String">The string to be converted.<br />需要转换的字符串</param>
+        /// <returns>The decoded bytes.<br />被解码的字节数组</returns>
+        public static byte[] DecodeBase16(this string base16String) => Base16.Decode(base16String);
     }
 }
