@@ -1,175 +1,179 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net6.0-windows;net7.0-windows;net8.0-windows;net9.0-windows;net9.0-browser</TargetFrameworks>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Title>QingYi.Core</Title>
-    <Version>5.2.0-pre5</Version>
-    <Authors>QingYi-Studio</Authors>
-    <Copyright>AGPL-3.0</Copyright>
-    <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Core</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/QingYi-Studio/QingYi.Core</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <Description>The core of our other projects.
-This project also has a lot of utility features, such as Base encoding, file information retrieval, file/folder compression, Shell, etc.</Description>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageTags>QingYi;Base;Base2;Base10;Base16;Base32;Base36;Base45;Base56;Base58;Base62;Base64;Encode;Decode;Codec;Shell;Folder;File;Compress;Regedit;Power</PackageTags>
-    <NuGetAudit>False</NuGetAudit>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-    <PackageReleaseNotes>- Optmize Base 62 codec.
-- Add Base 58 static method.
-- Temporarily hide the functions related to the registry.
-- Add some method to get the info of the power plan.</PackageReleaseNotes>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackAsTool>False</PackAsTool>
-    <SignAssembly>False</SignAssembly>
-    <IncludeSymbols>True</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <AssemblyVersion>5.2.0.6</AssemblyVersion>
-    <FileVersion>5.2.0.6</FileVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net6.0-windows;net7.0-windows;net8.0-windows;net9.0-windows;net9.0-browser</TargetFrameworks>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>QingYi.Core</Title>
+		<Version>5.2.0-pre5</Version>
+		<Authors>QingYi-Studio</Authors>
+		<Copyright>AGPL-3.0</Copyright>
+		<PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Core</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/QingYi-Studio/QingYi.Core</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Description>
+			The core of our other projects.
+			This project also has a lot of utility features, such as Base encoding, file information retrieval, file/folder compression, Shell, etc.
+		</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageTags>QingYi;Base;Base2;Base10;Base16;Base32;Base36;Base45;Base56;Base58;Base62;Base64;Encode;Decode;Codec;Shell;Folder;File;Compress;Regedit;Power</PackageTags>
+		<NuGetAudit>False</NuGetAudit>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+		<PackageReleaseNotes>
+			- Optmize Base 62 codec.
+			- Add Base 58 static method.
+			- Temporarily hide the functions related to the registry.
+			- Add some method to get the info of the power plan.
+		</PackageReleaseNotes>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackAsTool>False</PackAsTool>
+		<SignAssembly>False</SignAssembly>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<AssemblyVersion>5.2.0.6</AssemblyVersion>
+		<FileVersion>5.2.0.6</FileVersion>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-windows|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-windows|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-windows|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-windows|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-windows|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-windows|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.1|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.1|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0-windows|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0-windows|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0-windows|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0-windows|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-windows|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-windows|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-browser|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-browser|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-browser|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-browser|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="PowerSettings\**" />
-    <EmbeddedResource Remove="PowerSettings\**" />
-    <None Remove="PowerSettings\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="PowerSettings\**" />
+		<EmbeddedResource Remove="PowerSettings\**" />
+		<None Remove="PowerSettings\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Remove="icon.png" />
-    <None Remove="readme.md" />
-    <None Remove="Shell\How-To-Use.md" />
-    <None Remove="Shell\How-To-Use_CN.md" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="icon.png" />
+		<None Remove="readme.md" />
+		<None Remove="Shell\How-To-Use.md" />
+		<None Remove="Shell\How-To-Use_CN.md" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="icon.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </Content>
-    <Content Include="Shell\How-To-Use.md" />
-    <Content Include="Shell\How-To-Use_CN.md" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="icon.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</Content>
+		<Content Include="Shell\How-To-Use.md" />
+		<Content Include="Shell\How-To-Use_CN.md" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="EnvironmentVariable\User\" />
-    <Folder Include="EnvironmentVariable\System\" />
-    <Folder Include="FileUtility\UserProfile\AppData\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="EnvironmentVariable\User\" />
+		<Folder Include="EnvironmentVariable\System\" />
+		<Folder Include="FileUtility\UserProfile\AppData\" />
+	</ItemGroup>
 
 </Project>
