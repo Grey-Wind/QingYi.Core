@@ -4,7 +4,7 @@
 		<TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net9.0;net6.0-windows;net7.0-windows;net8.0-windows;net9.0-windows;net9.0-browser</TargetFrameworks>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Title>QingYi.Core</Title>
-		<Version>5.2.0-pre6</Version>
+		<Version>5.2.0-pre6-alpha1</Version>
 		<Authors>QingYi-Studio</Authors>
 		<Copyright>AGPL-3.0</Copyright>
 		<PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Core</PackageProjectUrl>
@@ -17,14 +17,17 @@
 		</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIcon>icon.png</PackageIcon>
-		<PackageTags>QingYi;Base;Base2;Base10;Base16;Base32;Base36;Base45;Base56;Base58;Base62;Base64;Encode;Decode;Codec;Shell;Folder;File;Compress;Regedit;Power</PackageTags>
+		<PackageTags>QingYi;Base;Base2;Base10;Base16;Base32;Base36;Base45;Base56;Base58;Base62;Base64;Encode;Decode;Codec;Compression;Deflate;LZ77;PPMd;LZMA;LZMA2;Shell;Folder;File;Regedit</PackageTags>
 		<NuGetAudit>False</NuGetAudit>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<PackageReleaseNotes>
+			- Rename "QingYi.Core.String" to "QingYi.Core.Codec".
 			- Support Deflate compression.
 			- Support LZ77 compression.
+			- Optimize the Base10 encoding and decoding implementation.
+			- Support encryption and decryption-related functions (DES)
 		</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
@@ -32,8 +35,8 @@
 		<SignAssembly>False</SignAssembly>
 		<IncludeSymbols>True</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<AssemblyVersion>5.2.0.8</AssemblyVersion>
-		<FileVersion>5.2.0.8</FileVersion>
+		<AssemblyVersion>5.2.0.9</AssemblyVersion>
+		<FileVersion>5.2.0.9</FileVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
@@ -147,6 +150,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Remove="Compression\PPMd_EN.md" />
 		<None Remove="FileUtility\IO\FileWriter_CN.md" />
 		<None Remove="icon.png" />
 		<None Remove="readme.md" />
@@ -155,6 +159,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Content Include="Compression\PPMd_EN.md" />
 		<Content Include="FileUtility\IO\FileWriter_CN.md" />
 		<Content Include="icon.png">
 			<Pack>True</Pack>
