@@ -1,5 +1,4 @@
 using QingYi.Core.Codec.Base;
-using QingYi.Core.String.Base;
 
 namespace BaseTest
 {
