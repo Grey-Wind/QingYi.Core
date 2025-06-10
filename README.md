@@ -14,9 +14,34 @@ Nuget link: https://www.nuget.org/packages/QingYi.Core
 
 The core of our other projects.
 
-## Statement of apology
-Sorry, version 5.0.0 should have been replaced by AGPL-3.0 in the repository, but due to an oversight, it was not found to be modified after the release of the version. Now it has been corrected, and version 5.0.0 still uses AGPL-3.0 instead of MIT.
+This project also has a lot of utility features, such as Base encoding, file information retrieval, file/folder compression, Shell, etc.
 
-2525.3.7
+## Installing
 
-Tsing Yi Studio
+.NET Cli
+
+```sh
+dotnet add package QingYi.Core
+```
+
+Package Manager
+
+```TEXT
+NuGet\Install-Package QingYi.Core
+```
+
+Package Reference
+
+Need specific the verison, 5.1.1 is the latest release version.
+
+```xml
+<PackageReference Include="QingYi.Core" Version="5.1.1" />
+```
+
+## Feedback
+
+For bug reporting/requests/new feature you can report issues on [github](https://github.com/QingYi-Studio/QingYi.Core/issue) if required.
+
+## Finally
+
+Enjoy!
