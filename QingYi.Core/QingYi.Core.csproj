@@ -23,7 +23,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<PackageReleaseNotes>
-			- Support Base92, Base94, Base100.
+			- Support Base91, Base92, Base94, Base100, Base122.
 		</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
@@ -31,8 +31,8 @@
 		<SignAssembly>False</SignAssembly>
 		<IncludeSymbols>True</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<AssemblyVersion>5.2.0.14</AssemblyVersion>
-		<FileVersion>5.2.0.21</FileVersion>
+		<AssemblyVersion>5.2.0.15</AssemblyVersion>
+		<FileVersion>5.2.0.22</FileVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
