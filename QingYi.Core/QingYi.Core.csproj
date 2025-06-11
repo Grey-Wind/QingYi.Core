@@ -17,7 +17,7 @@
 		</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIcon>icon.png</PackageIcon>
-		<PackageTags>QingYi;Base2;Base10;Base16;Base32;Base36;Base45;Base56;Base58;Base62;Base64;Base85;Base91;Base92;Base94;Base128;Encode;Decode;Codec;Compression;Deflate;LZ77;PPMd;Shell;Crypto;DES;AES</PackageTags>
+		<PackageTags>QingYi;Base2;Base10;Base16;Base32;Base36;Base45;Base56;Base58;Base62;Base64;Base85;Base91;Base92;Base94;Base100;Base122;Base128;Encode;Decode;Codec;Compression;Deflate;LZ77;PPMd;Shell;Crypto;DES;AES</PackageTags>
 		<NuGetAudit>False</NuGetAudit>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
