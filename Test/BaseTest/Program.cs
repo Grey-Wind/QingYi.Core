@@ -341,18 +341,98 @@ namespace BaseTest
             #endregion
 
             #region Base91
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base91 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base91.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base91.DecodeToString(Base91.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base92
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base92 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base92.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base92.DecodeToString(Base92.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base94
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base94 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base94.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base94.DecodeToString(Base94.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base100
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base100 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base100.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base100.Decode(Base100.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base122
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base122 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base122.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base122.DecodeToString(Base122.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base128
@@ -372,9 +452,6 @@ namespace BaseTest
             Console.ResetColor();
 
             GC.Collect();
-            #endregion
-
-            #region BaseXml
             #endregion
 
             GC.Collect();
