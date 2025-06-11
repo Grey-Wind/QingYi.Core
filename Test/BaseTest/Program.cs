@@ -1,3 +1,4 @@
+using System.Text;
 using QingYi.Core.Codec.Base;
 
 namespace BaseTest
@@ -321,6 +322,22 @@ namespace BaseTest
             #endregion
 
             #region Base85
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base85 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base85.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base85.DecodeToString(Base85.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base91
@@ -347,7 +364,7 @@ namespace BaseTest
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Encode: ");
-            Console.Write($"{Base128.EncodeString(testText, StringEncoding.UTF8)}  ");
+            Console.Write($"{Encoding.UTF8.GetString(Base128.EncodeString(testText, StringEncoding.UTF8))}  ");
             Console.Write("Decode: ");
             Console.Write($"{Base128.DecodeToString(Base128.EncodeString(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
 
