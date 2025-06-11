@@ -17,13 +17,13 @@
 		</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIcon>icon.png</PackageIcon>
-		<PackageTags>QingYi;Base2;Base10;Base16;Base32;Base36;Base45;Base56;Base58;Base62;Base64;Base85;Base91;Base92;Base94;Base100;Base122;Base128;Encode;Decode;Codec;Compression;Deflate;LZ77;PPMd;Shell;Crypto;DES;AES</PackageTags>
+		<PackageTags>QingYi;Base2;Base10;Base16;Base26;Base32;Base36;Base42;Base45;Base52;Base56;Base58;Base62;Base64;Base85;Base91;Base92;Base94;Base100;Base122;Base128;Encode;Decode;Codec;Compression;Deflate;LZ77;PPMd;Shell;Crypto;DES;AES</PackageTags>
 		<NuGetAudit>False</NuGetAudit>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<PackageReleaseNotes>
-			- Support Base26, Base42, Base91, Base92, Base94, Base100, Base122, Base128.
+			- Support Base26, Base42, Base52, Base91, Base92, Base94, Base100, Base122, Base128.
 			- Rename "QingYi.Core.String" to "QingYi.Core.Codec".
 			- Support Deflate and LZ77 compression.
 			- Optimize the Base10 encoding and decoding implementation.
