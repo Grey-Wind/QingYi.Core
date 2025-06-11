@@ -360,6 +360,22 @@ namespace BaseTest
             #endregion
 
             #region Base92
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base92 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base92.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base92.DecodeToString(Base92.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
             #endregion
 
             #region Base94
