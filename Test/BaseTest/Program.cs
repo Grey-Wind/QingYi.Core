@@ -93,6 +93,27 @@ namespace BaseTest
             GC.Collect();
             #endregion
 
+            #region Base26
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            var base26 = new Base26();
+
+            Console.Write("·Base26 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{base26.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{base26.DecodeToString(base26.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
+            #endregion
+
             #region Base32 RFC4648
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Magenta;

@@ -23,7 +23,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<PackageReleaseNotes>
-			- Support Base42, Base91, Base92, Base94, Base100, Base122, Base128.
+			- Support Base26, Base42, Base91, Base92, Base94, Base100, Base122, Base128.
 			- Rename "QingYi.Core.String" to "QingYi.Core.Codec".
 			- Support Deflate and LZ77 compression.
 			- Optimize the Base10 encoding and decoding implementation.
