@@ -93,6 +93,27 @@ namespace BaseTest
             GC.Collect();
             #endregion
 
+            #region Base26
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            var base26 = new Base26();
+
+            Console.Write("·Base26 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{base26.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{base26.DecodeToString(base26.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
+            #endregion
+
             #region Base32 RFC4648
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Magenta;
@@ -226,6 +247,25 @@ namespace BaseTest
             GC.Collect();
             #endregion
 
+            #region Base42
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base42 ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{Base42.EncodeString(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Base42.DecodeString(Base42.EncodeString(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
+            #endregion
+
             #region Base45
             // 设置前景颜色
             Console.ForegroundColor = ConsoleColor.Magenta;
@@ -238,6 +278,27 @@ namespace BaseTest
             Console.Write($"{Base45.Encode(testText, StringEncoding.UTF8)}  ");
             Console.Write("Decode: ");
             Console.Write($"{Base45.Decode(Base45.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+
+            GC.Collect();
+            #endregion
+
+            #region Base56
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·Base52 ");
+
+            var base52 = new Base52();
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Encode: ");
+            Console.Write($"{base52.Encode(testText, StringEncoding.UTF8)}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{base52.Decode(base52.Encode(testText, StringEncoding.UTF8), StringEncoding.UTF8)}\n");
 
             // 恢复为默认颜色
             Console.ResetColor();
