@@ -7,18 +7,30 @@ using System.Text;
 namespace QingYi.Core.Codec.Base
 {
     /// <summary>
-    /// Base32 codec library (Geohash).<br />
-    /// Base32 编解码库（Geohash）。
+    /// Provides Base32 encoding/decoding using the Geohash alphabet.
+    /// This variant uses a modified Base32 alphabet (0123456789bcdefghjkmnpqrstuvwxyz)
+    /// specifically designed for geohashing applications.
     /// </summary>
     public class Base32GeoHash
     {
+        // Geohash-specific Base32 alphabet (no 'a', 'i', 'l', 'o')
         private const string Base32Chars = "0123456789bcdefghjkmnpqrstuvwxyz";
+
+        // Pre-calculated encoding table
         private static readonly char[] EncodeTable = Base32Chars.ToCharArray();
+
+        // Decoding lookup table (128 ASCII characters)
         private static readonly byte[] DecodeTable = new byte[128];
 
+        /// <summary>
+        /// Static constructor initializes the decoding lookup table.
+        /// </summary>
         static Base32GeoHash()
         {
+            // Mark all characters as invalid initially
             Array.Fill(DecodeTable, (byte)0xFF);
+
+            // Map valid Geohash characters to their 5-bit values
             for (byte i = 0; i < EncodeTable.Length; i++)
             {
                 DecodeTable[EncodeTable[i]] = i;
@@ -26,30 +38,33 @@ namespace QingYi.Core.Codec.Base
         }
 
         /// <summary>
-        /// Gets the base32-encoded character set.<br />
-        /// 获取 Base32 编码的字符集。
+        /// Gets the character set used for Geohash Base32 encoding.
         /// </summary>
-        /// <returns>The base32-encoded character set.<br />Base32 编码的字符集</returns>
+        /// <returns>The Base32 alphabet string.</returns>
         public override string ToString() => Base32Chars;
 
         /// <summary>
-        /// Base36 encoding of the string.<br />
-        /// 将字符串进行Base32编码。
+        /// Encodes a string using Geohash Base32 encoding.
         /// </summary>
-        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
-        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
-        /// <returns>The encoded string.<br />被编码的字符串</returns>
+        /// <param name="input">The string to encode.</param>
+        /// <param name="encoding">The text encoding to use (default: UTF8).</param>
+        /// <returns>The Base32 encoded string.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if input is null.</exception>
         public static string Encode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (input == null)
                 throw new ArgumentNullException(nameof(input));
 
+            // Convert string to bytes using specified encoding
             byte[] bytes = GetBytes(input, encoding);
             int byteCount = bytes.Length;
+
+            // Calculate output size: ceil(inputBits / 5)
             int bitCount = byteCount * 8;
-            int charCount = (bitCount + 4) / 5; // Ceiling(bitCount / 5)
+            int charCount = (bitCount + 4) / 5;
             char[] result = new char[charCount];
 
+            // Use unsafe context for maximum performance
             unsafe
             {
                 fixed (byte* bytesPtr = bytes)
@@ -59,14 +74,17 @@ namespace QingYi.Core.Codec.Base
                     byte* endByte = bytesPtr + byteCount;
                     char* currentChar = resultPtr;
 
+                    // Bit buffer for accumulating bits across byte boundaries
                     int buffer = 0;
                     int bufferBits = 0;
 
                     while (currentByte < endByte)
                     {
+                        // Accumulate 8 bits from current byte
                         buffer = (buffer << 8) | *currentByte++;
                         bufferBits += 8;
 
+                        // Extract 5-bit chunks while we have enough bits
                         while (bufferBits >= 5)
                         {
                             bufferBits -= 5;
@@ -75,6 +93,7 @@ namespace QingYi.Core.Codec.Base
                         }
                     }
 
+                    // Handle remaining bits (less than 5)
                     if (bufferBits > 0)
                     {
                         int index = (buffer << (5 - bufferBits)) & 0x1F;
@@ -87,22 +106,26 @@ namespace QingYi.Core.Codec.Base
         }
 
         /// <summary>
-        /// Base36 decoding of the string.<br />
-        /// 将字符串进行Base32解码。
+        /// Decodes a Geohash Base32 encoded string.
         /// </summary>
-        /// <param name="base32Input">The string to be converted.<br />需要转换的字符串</param>
-        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
-        /// <returns>The decoded string.<br />被解码的字符串</returns>
+        /// <param name="base32Input">The Base32 string to decode.</param>
+        /// <param name="encoding">The text encoding to use (default: UTF8).</param>
+        /// <returns>The decoded original string.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if base32Input is null.</exception>
+        /// <exception cref="FormatException">Thrown for invalid Base32 characters.</exception>
         public static string Decode(string base32Input, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (base32Input == null)
                 throw new ArgumentNullException(nameof(base32Input));
 
             int charCount = base32Input.Length;
+
+            // Calculate output size: floor(inputBits / 8)
             int bitCount = charCount * 5;
             int byteCount = bitCount / 8;
             byte[] bytes = new byte[byteCount];
 
+            // Use unsafe context for maximum performance
             unsafe
             {
                 fixed (char* inputPtr = base32Input)
@@ -113,19 +136,24 @@ namespace QingYi.Core.Codec.Base
                     byte* currentByte = bytesPtr;
                     byte* endByte = bytesPtr + byteCount;
 
+                    // Bit buffer for accumulating bits across character boundaries
                     int buffer = 0;
                     int bufferBits = 0;
 
                     while (currentChar < endChar)
                     {
                         char c = *currentChar++;
+
+                        // Validate character is in Geohash alphabet
                         if (c >= DecodeTable.Length || DecodeTable[c] == 0xFF)
                             throw new FormatException($"Invalid Base32 character: '{c}'");
 
+                        // Accumulate 5 bits from current character
                         int value = DecodeTable[c];
                         buffer = (buffer << 5) | value;
                         bufferBits += 5;
 
+                        // Extract 8-bit bytes while we have enough bits
                         while (bufferBits >= 8 && currentByte < endByte)
                         {
                             bufferBits -= 8;
@@ -138,6 +166,9 @@ namespace QingYi.Core.Codec.Base
             return GetString(bytes, encoding);
         }
 
+        /// <summary>
+        /// Converts a string to bytes using the specified encoding.
+        /// </summary>
         private static byte[] GetBytes(string input, StringEncoding encoding)
         {
             Encoding encoder = encoding switch
@@ -156,6 +187,9 @@ namespace QingYi.Core.Codec.Base
             return encoder.GetBytes(input);
         }
 
+        /// <summary>
+        /// Converts bytes to a string using the specified encoding.
+        /// </summary>
         private static string GetString(byte[] bytes, StringEncoding encoding)
         {
             Encoding decoder = encoding switch
