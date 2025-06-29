@@ -268,7 +268,9 @@ namespace QingYi.Core.Codec.Base
 #if NET6_0_OR_GREATER
                 StringEncoding.Latin1 => Encoding.Latin1.GetBytes(s),
 #endif
+#pragma warning disable SYSLIB0001, CS0618
                 StringEncoding.UTF7 => GetUTF7Bytes(s),
+#pragma warning restore SYSLIB0001, CS0618
                 _ => throw new ArgumentException("Unsupported encoding")
             };
         }
