@@ -4,23 +4,23 @@ using System.Text;
 namespace QingYi.Core.Codec.Base
 {
     /// <summary>
-    /// Base 8 编解码库。<br />
-    /// Base 8 codec library.
+    /// Provides Base8 (Octal) encoding and decoding functionality
     /// </summary>
     public class Base8
     {
         /// <summary>
-        /// Base8 encoding of the byte array.<br />
-        /// 将字节数组进行Base8编码。
+        /// Encodes binary data to a Base8 (Octal) string
         /// </summary>
-        /// <param name="data">An array of bytes to be encoded.<br />要编码的字节数组</param>
-        /// <returns>An array of bytes to be encoded.<br />被编码的字节数组</returns>
+        /// <param name="data">Binary data to encode</param>
+        /// <returns>Base8 encoded string</returns>
+        /// <exception cref="ArgumentNullException">Thrown when input data is null</exception>
         public static unsafe string Encode(byte[] data)
         {
             if (data == null) throw new ArgumentNullException(nameof(data));
             if (data.Length == 0) return string.Empty;
 
             int length = data.Length;
+            // Each byte expands to 3 octal digits (8^3 = 512, which covers 0-255)
             char[] result = new char[length * 3];
 
             fixed (byte* pData = data)
@@ -32,9 +32,10 @@ namespace QingYi.Core.Codec.Base
                 for (int i = 0; i < length; i++)
                 {
                     byte b = *src++;
-                    *dest++ = (char)('0' + (b >> 6));
-                    *dest++ = (char)('0' + (b >> 3 & 0x07));
-                    *dest++ = (char)('0' + (b & 0x07));
+                    // Extract and encode each 3-bit segment (octal digit)
+                    *dest++ = (char)('0' + (b >> 6));        // First 2 bits (shifted right 6)
+                    *dest++ = (char)('0' + (b >> 3 & 0x07)); // Middle 3 bits (mask 0x07)
+                    *dest++ = (char)('0' + (b & 0x07));      // Last 3 bits (mask 0x07)
                 }
             }
 
@@ -42,14 +43,16 @@ namespace QingYi.Core.Codec.Base
         }
 
         /// <summary>
-        /// Base8 decoding of the byte array.<br />
-        /// 将字节数组进行Base8解码。
+        /// Decodes a Base8 (Octal) string to binary data
         /// </summary>
-        /// <param name="base8">The string to be converted.<br />需要转换的字符串</param>
-        /// <returns>An array of bytes to be decoded.<br />被解码的字符串</returns>
+        /// <param name="base8">Base8 encoded string</param>
+        /// <returns>Decoded binary data</returns>
+        /// <exception cref="ArgumentNullException">Thrown when input string is null</exception>
+        /// <exception cref="ArgumentException">Thrown for invalid Base8 strings</exception>
         public static unsafe byte[] Decode(string base8)
         {
             if (base8 == null) throw new ArgumentNullException(nameof(base8));
+            // Base8 encoding expands each byte to 3 digits, so length must be multiple of 3
             if (base8.Length % 3 != 0) throw new ArgumentException("Invalid Base8 string length");
 
             int byteCount = base8.Length / 3;
@@ -66,13 +69,14 @@ namespace QingYi.Core.Codec.Base
                 for (int i = 0; i < byteCount; i++)
                 {
                     byte b = 0;
+                    // Combine 3 octal digits back into a byte
                     for (int j = 0; j < 3; j++)
                     {
                         int c = *src++;
                         if (c < '0' || c > '7')
                             throw new ArgumentException($"Invalid Base8 character: {(char)c}");
 
-                        b = (byte)(b << 3 | c - '0');
+                        b = (byte)(b << 3 | c - '0'); // Shift left and add new 3 bits
                     }
                     *dest++ = b;
                 }
@@ -82,12 +86,11 @@ namespace QingYi.Core.Codec.Base
         }
 
         /// <summary>
-        /// Base8 encoding of the string.<br />
-        /// 将字符串进行Base8编码。
+        /// Encodes a string to Base8 using the specified text encoding
         /// </summary>
-        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
-        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
-        /// <returns>The encoded string.<br />被编码的字符串</returns>
+        /// <param name="input">String to encode</param>
+        /// <param name="encoding">Text encoding to use (default: UTF-8)</param>
+        /// <returns>Base8 encoded string</returns>
         public static string EncodeString(string input, StringEncoding encoding = StringEncoding.UTF8)
         {
             byte[] bytes = StringEncodingHelper.GetBytes(input, encoding);
@@ -95,20 +98,29 @@ namespace QingYi.Core.Codec.Base
         }
 
         /// <summary>
-        /// Base8 decoding of the string.<br />
-        /// 将字符串进行Base8解码。
+        /// Decodes a Base8 string to text using the specified encoding
         /// </summary>
-        /// <param name="base8">The string to be converted.<br />需要转换的字符串</param>
-        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
-        /// <returns>The decoded string.<br />被解码的字符串</returns>
+        /// <param name="base8">Base8 encoded string</param>
+        /// <param name="encoding">Text encoding to use (default: UTF-8)</param>
+        /// <returns>Decoded string</returns>
         public static string DecodeString(string base8, StringEncoding encoding = StringEncoding.UTF8)
         {
             byte[] bytes = Decode(base8);
             return StringEncodingHelper.GetString(bytes, encoding);
         }
 
+        /// <summary>
+        /// Helper class for string encoding/decoding operations
+        /// </summary>
         static class StringEncodingHelper
         {
+            /// <summary>
+            /// Converts string to bytes using specified encoding
+            /// </summary>
+            /// <param name="s">String to convert</param>
+            /// <param name="encoding">Encoding to use</param>
+            /// <returns>Byte array representation of the string</returns>
+            /// <exception cref="ArgumentOutOfRangeException">Thrown for unsupported encodings</exception>
             public static byte[] GetBytes(string s, StringEncoding encoding)
             {
                 Encoding encoder;
@@ -132,9 +144,9 @@ namespace QingYi.Core.Codec.Base
                         break;
 #pragma warning restore CS0618, SYSLIB0001
 #if NET6_0_OR_GREATER
-                case StringEncoding.Latin1:
-                    encoder = Encoding.Latin1;
-                    break;
+                    case StringEncoding.Latin1:
+                        encoder = Encoding.Latin1;
+                        break;
 #endif
                     case StringEncoding.ASCII:
                         encoder = Encoding.ASCII;
@@ -145,6 +157,13 @@ namespace QingYi.Core.Codec.Base
                 return encoder.GetBytes(s);
             }
 
+            /// <summary>
+            /// Converts bytes to string using specified encoding
+            /// </summary>
+            /// <param name="bytes">Bytes to convert</param>
+            /// <param name="encoding">Encoding to use</param>
+            /// <returns>String representation of the bytes</returns>
+            /// <exception cref="ArgumentOutOfRangeException">Thrown for unsupported encodings</exception>
             public static string GetString(byte[] bytes, StringEncoding encoding)
             {
                 Encoding decoder;
@@ -166,9 +185,9 @@ namespace QingYi.Core.Codec.Base
                         decoder = Encoding.UTF32;
                         break;
 #if NET6_0_OR_GREATER
-                case StringEncoding.Latin1:
-                    decoder = Encoding.Latin1;
-                    break;
+                    case StringEncoding.Latin1:
+                        decoder = Encoding.Latin1;
+                        break;
 #endif
 #pragma warning disable CS0618, SYSLIB0001
                     case StringEncoding.UTF7:
@@ -184,43 +203,38 @@ namespace QingYi.Core.Codec.Base
     }
 
     /// <summary>
-    /// Static string extension of Base8 codec library.<br />
-    /// Base8 编解码库的静态字符串拓展。
+    /// Provides extension methods for Base8 encoding/decoding
     /// </summary>
     public static class Base8Extension
     {
         /// <summary>
-        /// Base8 encoding of the string.<br />
-        /// 将字符串进行 Base8 编码。
+        /// Encodes a string to Base8 using the specified text encoding
         /// </summary>
-        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
-        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
-        /// <returns>The encoded string.<br />被编码的字符串</returns>
+        /// <param name="input">String to encode</param>
+        /// <param name="encoding">Text encoding to use (default: UTF-8)</param>
+        /// <returns>Base8 encoded string</returns>
         public static string EncodeBase8(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base8.EncodeString(input, encoding);
 
         /// <summary>
-        /// Base8 decoding of the string.<br />
-        /// 将字符串进行 Base8 解码。
+        /// Decodes a Base8 string to text using the specified encoding
         /// </summary>
-        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
-        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
-        /// <returns>The decoded string.<br />被解码的字符串</returns>
+        /// <param name="input">Base8 encoded string</param>
+        /// <param name="encoding">Text encoding to use (default: UTF-8)</param>
+        /// <returns>Decoded string</returns>
         public static string DecodeBase8(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base8.DecodeString(input, encoding);
 
         /// <summary>
-        /// Base8 encoding of the bytes.<br />
-        /// 将字节数组进行 Base8 编码。
+        /// Encodes binary data to a Base8 string
         /// </summary>
-        /// <param name="input">The bytes to be converted.<br />需要转换的字节数组</param>
-        /// <returns>The encoded string.<br />被编码的字符串</returns>
+        /// <param name="input">Binary data to encode</param>
+        /// <returns>Base8 encoded string</returns>
         public static string EncodeBase8(this byte[] input) => Base8.Encode(input);
 
         /// <summary>
-        /// Base8 decoding of the bytes.<br />
-        /// 将字节数组进行 Base8 解码。
+        /// Decodes a Base8 string to binary data
         /// </summary>
-        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
-        /// <returns>The decoded bytes.<br />被解码的字节数组</returns>
+        /// <param name="input">Base8 encoded string</param>
+        /// <returns>Decoded binary data</returns>
         public static byte[] DecodeBase8(this string input) => Base8.Decode(input);
     }
 }
