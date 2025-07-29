@@ -2,6 +2,8 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace QingYi.Core.Crypto
 {
@@ -306,6 +308,144 @@ namespace QingYi.Core.Crypto
         }
 #endif
         #endregion
+
+        #region Static Methods - String Operations
+
+        /// <summary>
+        /// Encrypts data using specified key and IV
+        /// </summary>
+        /// <param name="data">Data to encrypt</param>
+        /// <param name="key">Encryption key</param>
+        /// <param name="iv">Initialization vector</param>
+        /// <returns>Encrypted data as byte array</returns>
+        public static byte[] Encrypt(byte[] data, string key, string iv)
+        {
+            byte[] keyB = FormattingKeyIV(key, 32); // 32 字节密钥对应 AES-256
+            byte[] ivB = FormattingKeyIV(iv, 16);   // 16 字节 IV 对应 AES
+
+            using (var aes = new AESCrypto())
+            {
+                aes.Key = keyB;
+                aes.IV = ivB;
+                return aes.Encrypt(data);
+            }
+        }
+
+        /// <summary>
+        /// Decrypts data using specified key and IV
+        /// </summary>
+        /// <param name="data">Data to decrypt</param>
+        /// <param name="key">Encryption key (16/24/32 bytes)</param>
+        /// <param name="iv">Initialization vector (16 bytes)</param>
+        /// <returns>Decrypted data as byte array</returns>
+        public static byte[] Decrypt(byte[] data, string key, string iv)
+        {
+            byte[] keyB = FormattingKeyIV(key, 32); // 32 字节密钥对应 AES-256
+            byte[] ivB = FormattingKeyIV(iv, 16);   // 16 字节 IV 对应 AES
+
+            using (var aes = new AESCrypto())
+            {
+                aes.Key = keyB;
+                aes.IV = ivB;
+                return aes.Decrypt(data);
+            }
+        }
+
+        /// <summary>
+        /// Encrypts data using specified key and IV
+        /// </summary>
+        /// <param name="data">Data to encrypt</param>
+        /// <param name="key">Encryption key</param>
+        /// <param name="iv">Initialization vector</param>
+        /// <returns>Encrypted data as byte array</returns>
+        public static byte[] Encrypt(string data, string key, string iv)
+        {
+            byte[] keyB = FormattingKeyIV(key, 32); // 32 字节密钥对应 AES-256
+            byte[] ivB = FormattingKeyIV(iv, 16);   // 16 字节 IV 对应 AES
+            byte[] dataB = Encoding.UTF8.GetBytes(data);
+
+            using (var aes = new AESCrypto())
+            {
+                aes.Key = keyB;
+                aes.IV = ivB;
+                return aes.Encrypt(dataB);
+            }
+        }
+
+        /// <summary>
+        /// Decrypts data using specified key and IV
+        /// </summary>
+        /// <param name="data">Data to decrypt</param>
+        /// <param name="key">Encryption key (16/24/32 bytes)</param>
+        /// <param name="iv">Initialization vector (16 bytes)</param>
+        /// <returns>Decrypted data as byte array</returns>
+        public static string Decrypt(string data, string key, string iv)
+        {
+            byte[] keyB = FormattingKeyIV(key, 32); // 32 字节密钥对应 AES-256
+            byte[] ivB = FormattingKeyIV(iv, 16);   // 16 字节 IV 对应 AES
+            byte[] dataB = Encoding.UTF8.GetBytes(data);
+
+            using (var aes = new AESCrypto())
+            {
+                aes.Key = keyB;
+                aes.IV = ivB;
+                return Encoding.UTF8.GetString(aes.Decrypt(dataB));
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Converts a hexadecimal string to a byte array.<br></br>
+        /// 将十六进制字符串转换为字节数组。
+        /// </summary>
+        /// <param name="hex">
+        /// The hexadecimal string to convert.<br></br>
+        /// 要转换的十六进制字符串。
+        /// </param>
+        /// <param name="expectedLength">
+        /// The desired byte length.<br></br>
+        /// 所需的字节长度。
+        /// </param>
+        /// <returns>
+        /// The corresponding byte array.<br></br>
+        /// 对应的字节数组。
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown when the length of the <paramref name="hex"/> string is not an even number.<br></br>
+        /// 当<paramref name="hex"/>字符串的长度不是偶数时抛出。
+        /// </exception>
+        private static byte[] FormattingKeyIV(string hex, int expectedLength)
+        {
+            if (string.IsNullOrWhiteSpace(hex))
+            {
+                throw new ArgumentException("Hex string cannot be null or empty.", nameof(hex));
+            }
+
+            hex = Regex.Replace(hex, @"[^0-9A-Fa-f]", string.Empty);
+
+            if (hex.Length % 2 != 0)
+            {
+                throw new ArgumentException("Hex string must have an even length.", nameof(hex));
+            }
+
+            if (hex.Length > expectedLength * 2)
+            {
+                hex = hex.Substring(0, expectedLength * 2);
+            }
+            else if (hex.Length < expectedLength * 2)
+            {
+                hex = hex.PadLeft(expectedLength * 2, '0');
+            }
+
+            byte[] bytes = new byte[expectedLength];
+
+            for (int i = 0; i < hex.Length; i += 2)
+            {
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            }
+
+            return bytes;
+        }
     }
 }
 #endif
