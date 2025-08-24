@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NET463
+using System;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -138,3 +139,4 @@ namespace QingYi.Core.Codec.Base
         }
     }
 }
+#endif

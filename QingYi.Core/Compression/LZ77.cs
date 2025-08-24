@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NET461 && !NET462
+using System;
 using System.Collections.Generic;
 
 namespace QingYi.Core.Compression
@@ -217,3 +218,4 @@ namespace QingYi.Core.Compression
         }
     }
 }
+#endif

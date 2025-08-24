@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NET461 && !NET462 && !NET463
+using System;
 using System.Diagnostics;
 
 namespace QingYi.Core.Timer
@@ -113,3 +114,4 @@ namespace QingYi.Core.Timer
         }
     }
 }
+#endif
