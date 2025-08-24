@@ -515,6 +515,24 @@ namespace BaseTest
             GC.Collect();
             #endregion
 
+            #region AutoBase
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.Write("·AutoBase ");
+
+            // 设置前景颜色
+            Console.ForegroundColor = ConsoleColor.Green;
+            var autoBase = new AutoBase("205");
+            Console.Write("Encode: ");
+            Console.Write($"{autoBase.Encode(Encoding.UTF8.GetBytes(testText))}  ");
+            Console.Write("Decode: ");
+            Console.Write($"{Encoding.UTF8.GetString(autoBase.Decode(autoBase.Encode(Encoding.UTF8.GetBytes(testText))))}\n");
+
+            // 恢复为默认颜色
+            Console.ResetColor();
+            #endregion
+
             GC.Collect();
 
             Console.ReadKey();
