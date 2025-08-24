@@ -151,7 +151,7 @@ namespace QingYi.Core.Crypto
             }
         }
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         /// <summary>
         /// Encrypts data from a read-only span using DES.
         /// </summary>
