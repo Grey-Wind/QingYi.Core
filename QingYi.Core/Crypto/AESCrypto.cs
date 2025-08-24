@@ -1,4 +1,4 @@
-﻿#if !BROWSER
+#if !BROWSER
 using System;
 using System.IO;
 using System.Security.Cryptography;

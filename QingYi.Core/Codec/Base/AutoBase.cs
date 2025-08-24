@@ -1,4 +1,4 @@
-﻿#if !NET463
+#if !NET463
 using System;
 using System.Linq;
 using System.Numerics;
