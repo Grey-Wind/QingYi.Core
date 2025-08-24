@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER || NET461_OR_GREATER || NETCOREAPP
+using System.Text;
 using System;
 
 #pragma warning disable SYSLIB0001, CS0618, CA1510
@@ -94,8 +95,10 @@ namespace QingYi.Core.Codec.Base
                     return Encoding.Unicode.GetBytes(input);
                 case StringEncoding.UTF16BE:
                     return Encoding.BigEndianUnicode.GetBytes(input);
+#if !NET461 && !NET462
                 case StringEncoding.UTF32:
                     return GetUtf32Bytes(input, isBigEndian);
+#endif
 #if NET6_0_OR_GREATER
                 case StringEncoding.Latin1:
                     return Encoding.GetEncoding(28591).GetBytes(input);
@@ -124,8 +127,10 @@ namespace QingYi.Core.Codec.Base
                     return Encoding.Unicode.GetString(bytes);
                 case StringEncoding.UTF16BE:
                     return Encoding.BigEndianUnicode.GetString(bytes);
+#if !NET461 && !NET462
                 case StringEncoding.UTF32:
                     return GetUtf32String(bytes, isBigEndian);
+#endif
 #if NET6_0_OR_GREATER
                 case StringEncoding.Latin1:
                     return Encoding.GetEncoding(28591).GetString(bytes);
@@ -139,6 +144,7 @@ namespace QingYi.Core.Codec.Base
             }
         }
 
+#if !NET461 && !NET462
         /// <summary>
         /// Gets UTF-32 bytes with proper endianness handling.
         /// </summary>
@@ -184,6 +190,7 @@ namespace QingYi.Core.Codec.Base
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Converts a byte array to its Base2 representation.
@@ -302,3 +309,4 @@ namespace QingYi.Core.Codec.Base
         public static byte[] DecodeBase2(this string base2) => Base2.Base2ToBytes(base2);
     }
 }
+#endif

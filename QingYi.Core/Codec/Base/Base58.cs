@@ -136,7 +136,12 @@ namespace QingYi.Core.Codec.Base
         /// <exception cref="FormatException">Thrown for invalid Base58 characters</exception>
         internal static unsafe byte[] DecodeToBytes(string input)
         {
-            if (input.Length == 0) return Array.Empty<byte>();
+            if (input.Length == 0)
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
+                return Array.Empty<byte>();
+#endif
 
             // Count leading '1's (representing leading zero bytes)
             int leadingOnes = 0;

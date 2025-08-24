@@ -90,7 +90,12 @@ namespace QingYi.Core.Codec.Base
         private static unsafe byte[] DecodeToBytes(string base100Text)
         {
             if (base100Text == null) throw new ArgumentNullException(nameof(base100Text));
-            if (base100Text.Length == 0) return Array.Empty<byte>();
+            if (base100Text.Length == 0)
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
+                return Array.Empty<byte>();
+#endif
             if (base100Text.Length % 2 != 0)
                 throw new ArgumentException("Base100 text length must be even", nameof(base100Text));
 

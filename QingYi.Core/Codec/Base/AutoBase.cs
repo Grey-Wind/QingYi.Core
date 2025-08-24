@@ -1,15 +1,36 @@
-﻿using System;
+#if !NET463
+using System;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 
 namespace QingYi.Core.Codec.Base
 {
+    /// <summary>
+    /// Provides methods for encoding and decoding data using a custom base conversion
+    /// with a user-defined character set.
+    /// </summary>
+    /// <remarks>
+    /// This implementation supports arbitrary base conversions using BigInteger
+    /// for handling large numbers. The character set must contain unique characters
+    /// to ensure unambiguous encoding/decoding.
+    /// </remarks>
     public class AutoBase
     {
         private readonly string _characterSet;
         private readonly int _base;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AutoBase"/> class with the specified character set.
+        /// </summary>
+        /// <param name="characterSet">The set of characters to use for encoding/decoding. Must contain unique characters.</param>
+        /// <exception cref="ArgumentException">
+        /// Thrown when:
+        /// <list type="bullet">
+        /// <item><description>The character set has fewer than 2 characters</description></item>
+        /// <item><description>The character set contains duplicate characters</description></item>
+        /// </list>
+        /// </exception>
         public AutoBase(string characterSet)
         {
             if (characterSet.Length < 2)
@@ -21,26 +42,41 @@ namespace QingYi.Core.Codec.Base
             _base = characterSet.Length;
         }
 
+        /// <summary>
+        /// Encodes a byte array into a string using the configured character set.
+        /// </summary>
+        /// <param name="data">The byte array to encode. Can be empty or null.</param>
+        /// <returns>
+        /// An encoded string representation of the input data using the configured character set.
+        /// Returns an empty string if the input is null or empty.
+        /// </returns>
+        /// <remarks>
+        /// The encoding process:
+        /// <list type="number">
+        /// <item><description>Converts bytes to a BigInteger (little-endian with sign handling)</description></item>
+        /// <item><description>Performs base conversion using the character set</description></item>
+        /// <item><description>Builds the output string from remainders</description></item>
+        /// </list>
+        /// </remarks>
         public string Encode(byte[] data)
         {
             if (data == null || data.Length == 0)
                 return string.Empty;
 
-            // 处理空数组的特殊情况
+            // Handle special case for single zero byte
             if (data.Length == 1 && data[0] == 0)
                 return _characterSet[0].ToString();
 
-            // 将字节数组转换为大整数
-            // 注意：BigInteger 构造函数期望的是小端序字节
+            // Convert byte array to BigInteger (requires little-endian byte order)
             BigInteger number = new BigInteger(data.Reverse().ToArray());
 
-            // 如果最高位是1，可能需要添加一个前导0字节以确保正数
+            // Add leading zero byte if needed to ensure positive representation
             if (data[data.Length - 1] > 0x7F)
             {
                 number = new BigInteger(data.Concat(new byte[] { 0 }).Reverse().ToArray());
             }
 
-            // 转换为目标进制
+            // Convert to target base
             StringBuilder result = new StringBuilder();
             while (number > 0)
             {
@@ -52,12 +88,32 @@ namespace QingYi.Core.Codec.Base
             return result.ToString();
         }
 
+        /// <summary>
+        /// Decodes an encoded string back to the original byte array.
+        /// </summary>
+        /// <param name="encoded">The encoded string to decode. Can be null or empty.</param>
+        /// <returns>
+        /// The decoded byte array. Returns an empty array if input is null or empty.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when the input string contains characters not present in the character set.</exception>
+        /// <remarks>
+        /// The decoding process:
+        /// <list type="number">
+        /// <item><description>Converts characters back to a BigInteger</description></item>
+        /// <item><description>Converts BigInteger to little-endian byte array</description></item>
+        /// <item><description>Adjusts endianness and removes padding if necessary</description></item>
+        /// </list>
+        /// </remarks>
         public byte[] Decode(string encoded)
         {
             if (string.IsNullOrEmpty(encoded))
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
                 return Array.Empty<byte>();
+#endif
 
-            // 将字符串转换回大整数
+            // Convert string back to BigInteger
             BigInteger number = 0;
             foreach (char c in encoded)
             {
@@ -68,16 +124,16 @@ namespace QingYi.Core.Codec.Base
                 number = number * _base + value;
             }
 
-            // 将大整数转换回字节数组
+            // Convert BigInteger to byte array
             byte[] bytes = number.ToByteArray();
 
-            // 反转字节顺序（BigInteger使用小端序，我们需要大端序）
+            // Reverse byte order (BigInteger uses little-endian, we need big-endian)
             if (BitConverter.IsLittleEndian)
             {
                 Array.Reverse(bytes);
             }
 
-            // 移除可能的前导零字节
+            // Remove possible leading zero byte
             if (bytes.Length > 1 && bytes[0] == 0)
             {
                 bytes = bytes.Skip(1).ToArray();
@@ -87,3 +143,4 @@ namespace QingYi.Core.Codec.Base
         }
     }
 }
+#endif

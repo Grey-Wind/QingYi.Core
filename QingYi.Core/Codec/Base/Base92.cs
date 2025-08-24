@@ -146,7 +146,11 @@ namespace QingYi.Core.Codec.Base
         public static byte[] Decode(string base92)
         {
             if (string.IsNullOrEmpty(base92))
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
                 return Array.Empty<byte>();
+#endif
 
             unsafe
             {

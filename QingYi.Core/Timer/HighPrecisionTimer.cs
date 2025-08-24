@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER || NET47_OR_GREATER || NETCOREAPP
+using System;
 using System.Diagnostics;
 
 namespace QingYi.Core.Timer
@@ -113,3 +114,4 @@ namespace QingYi.Core.Timer
         }
     }
 }
+#endif

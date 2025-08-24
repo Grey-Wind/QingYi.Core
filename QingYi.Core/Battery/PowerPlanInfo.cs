@@ -37,6 +37,19 @@ namespace QingYi.Core.Battery
 
         #region Power API
 #pragma warning disable SYSLIB1054
+#if NETSTANDARD1_5_OR_GREATER
+        [DllImport("powrprof.dll", CharSet = CharSet.Unicode)]
+        private static extern uint PowerGetActiveScheme(IntPtr userRoot, out IntPtr activePolicyGuid);
+
+        [DllImport("powrprof.dll", CharSet = CharSet.Unicode)]
+        private static extern uint PowerReadFriendlyName(
+            IntPtr rootPowerKey,
+            ref Guid schemeGuid,
+            IntPtr subgroupOfPowerSettingsGuid,
+            IntPtr powerSettingGuid,
+            IntPtr buffer,
+            ref uint bufferSize);
+#else
         [DllImport("powrprof.dll", CharSet = CharSet.Auto)]
         private static extern uint PowerGetActiveScheme(IntPtr userRoot, out IntPtr activePolicyGuid);
 
@@ -48,6 +61,7 @@ namespace QingYi.Core.Battery
             IntPtr powerSettingGuid,
             IntPtr buffer,
             ref uint bufferSize);
+#endif
 
         // SystemParametersInfo for Battery Saver
         [DllImport("user32.dll", SetLastError = true)]
@@ -57,7 +71,7 @@ namespace QingYi.Core.Battery
             ref bool pvParam,
             uint fWinIni);
 #pragma warning restore SYSLIB1054
-        #endregion
+#endregion
 
         #region GUIDs for default power plans
 #pragma warning disable IDE0090
@@ -105,7 +119,9 @@ namespace QingYi.Core.Battery
 #if NET9_0_OR_GREATER
                 Guid activeGuid = Marshal.PtrToStructure<Guid>(activeGuidPtr);
 #else
+#pragma warning disable CS0618 // 类型或成员已过时
                 Guid activeGuid = (Guid)Marshal.PtrToStructure(activeGuidPtr, typeof(Guid));
+#pragma warning restore CS0618 // 类型或成员已过时
 #endif
 
                 if (activeGuid == HighPerformanceGuid) return PowerPlanType.HighPerformance;
@@ -129,7 +145,9 @@ namespace QingYi.Core.Battery
 #if NET9_0_OR_GREATER
                 Guid activeGuid = Marshal.PtrToStructure<Guid>(activeGuidPtr);
 #else
+#pragma warning disable CS0618 // 类型或成员已过时
                 Guid activeGuid = (Guid)Marshal.PtrToStructure(activeGuidPtr, typeof(Guid));
+#pragma warning restore CS0618 // 类型或成员已过时
 #endif
 
                 uint bufferSize = 0;

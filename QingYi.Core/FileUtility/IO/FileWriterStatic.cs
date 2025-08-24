@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETFRAMEWORK && NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER || NETCOREAPP
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,7 +59,7 @@ namespace QingYi.Core.FileUtility.IO
             await writer.WriteAsync(data.AsMemory());
         }
 
-#elif NETSTANDARD2_0
+#else
         /// <summary>
         /// Writes data to a file in a single operation (synchronous).
         /// </summary>
@@ -105,3 +106,4 @@ namespace QingYi.Core.FileUtility.IO
 #endif
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if !NETFRAMEWORK && NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER || NETCOREAPP
 namespace QingYi.Core.FileUtility.IO
 {
 #if NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -222,21 +223,19 @@ namespace QingYi.Core.FileUtility.IO
                 HandleInheritability.None,
                 false))
             {
-                using (var accessor = mmFile.CreateViewAccessor(0, data.Length))
+                using var accessor = mmFile.CreateViewAccessor(0, data.Length);
+                unsafe
                 {
-                    unsafe
+                    byte* ptr = null;
+                    accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptr);
+                    try
                     {
-                        byte* ptr = null;
-                        accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptr);
-                        try
-                        {
-                            // Copy data directly to mapped memory
-                            data.Span.CopyTo(new Span<byte>(ptr, data.Length));
-                        }
-                        finally
-                        {
-                            accessor.SafeMemoryMappedViewHandle.ReleasePointer();
-                        }
+                        // Copy data directly to mapped memory
+                        data.Span.CopyTo(new Span<byte>(ptr, data.Length));
+                    }
+                    finally
+                    {
+                        accessor.SafeMemoryMappedViewHandle.ReleasePointer();
                     }
                 }
             }
@@ -291,7 +290,7 @@ namespace QingYi.Core.FileUtility.IO
         {
             if (_bufferPosition > 0)
             {
-                await _fileStream.WriteAsync(_buffer, 0, _bufferPosition, cancellationToken)
+                await _fileStream.WriteAsync(_buffer.AsMemory(0, _bufferPosition), cancellationToken)
                     .ConfigureAwait(false);
                 _bufferPosition = 0;
             }
@@ -365,7 +364,7 @@ namespace QingYi.Core.FileUtility.IO
             }
         }
     }
-#elif NETSTANDARD2_0
+#else
     using System;
     using System.IO;
     using System.Threading.Tasks;
@@ -694,4 +693,4 @@ namespace QingYi.Core.FileUtility.IO
     }
 #endif
 }
-
+#endif

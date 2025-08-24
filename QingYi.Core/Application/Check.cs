@@ -1,4 +1,4 @@
-﻿#if !BROWSER
+﻿#if !BROWSER && !NETSTANDARD1_6 && !NETSTANDARD1_5
 using System;
 using System.Diagnostics;
 
