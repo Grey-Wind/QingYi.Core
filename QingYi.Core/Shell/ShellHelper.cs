@@ -1,4 +1,4 @@
-﻿#if !BROWSER
+﻿#if !BROWSER && !NETSTANDARD1_6 && !NETSTANDARD1_5
 using System;
 using System.Diagnostics;
 using System.Text;
@@ -95,6 +95,7 @@ namespace QingYi.Core.Shell
                 builder.AppendLine(data);
         }
 
+#if !NETSTANDARD1_6
         private static Task<bool> WaitForExitAsync(this Process process)
         {
             var tcs = new TaskCompletionSource<bool>();
@@ -102,6 +103,7 @@ namespace QingYi.Core.Shell
             process.Exited += (s, e) => tcs.TrySetResult(true);
             return tcs.Task;
         }
+#endif
     }
 }
 #endif

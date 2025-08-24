@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NETSTANDARD2_0_OR_GREATER || NET46_OR_GREATER || NET5_0_OR_GREATER || NETCOREAPP
+using System;
 using System.IO;
 using System.Security.Cryptography;
 
@@ -306,3 +307,4 @@ namespace QingYi.Core.Crypto
 #endif
     }
 }
+#endif

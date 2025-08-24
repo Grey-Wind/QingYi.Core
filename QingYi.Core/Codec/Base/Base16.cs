@@ -116,7 +116,12 @@ namespace QingYi.Core.Codec.Base
             if (base16String.Length % 2 != 0)
                 throw new ArgumentException("Base16 string length must be even.");
 
-            if (base16String.Length == 0) return Array.Empty<byte>();
+            if (base16String.Length == 0)
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
+                return Array.Empty<byte>();
+#endif
 
             byte[] result = new byte[base16String.Length / 2];
             unsafe

@@ -1,4 +1,4 @@
-﻿#if !NET461 && !NET462
+﻿#if NET47_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER || NETCOREAPP
 using System;
 using System.Collections.Generic;
 

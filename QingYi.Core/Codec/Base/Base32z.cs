@@ -212,7 +212,11 @@ namespace QingYi.Core.Codec.Base
         private static byte[] DecodeToBytes(string base32)
         {
             if (base32.Length == 0)
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
                 return Array.Empty<byte>();
+#endif
 
             // Calculate output size: ceil(inputBits / 8)
             int inputLength = base32.Length;

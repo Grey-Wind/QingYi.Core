@@ -133,7 +133,12 @@ namespace QingYi.Core.Codec.Base
         private static byte[] DecodeString(string input)
         {
             int inputLength = input.Length;
-            if (inputLength == 0) return Array.Empty<byte>();
+            if (inputLength == 0)
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
+                return Array.Empty<byte>();
+#endif
 
             int remainder = inputLength % 3;
             // Base45 requires length to be multiple of 3 or remainder 2

@@ -107,7 +107,11 @@ namespace QingYi.Core.Codec.Base
         public byte[] Decode(string encoded)
         {
             if (string.IsNullOrEmpty(encoded))
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
                 return Array.Empty<byte>();
+#endif
 
             // Convert string back to BigInteger
             BigInteger number = 0;

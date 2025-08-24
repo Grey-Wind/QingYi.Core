@@ -161,7 +161,12 @@ namespace QingYi.Core.Codec.Base
                 }
             }
 
-            if (validCharCount == 0) return Array.Empty<byte>();
+            if (validCharCount == 0)
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
+                return Array.Empty<byte>();
+#endif
             // Calculate output length: floor(validCharCount * 5 / 8)
             int outputLength = validCharCount * 5 / 8;
             byte[] output = new byte[outputLength];

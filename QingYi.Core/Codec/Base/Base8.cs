@@ -56,7 +56,12 @@ namespace QingYi.Core.Codec.Base
             if (base8.Length % 3 != 0) throw new ArgumentException("Invalid Base8 string length");
 
             int byteCount = base8.Length / 3;
-            if (byteCount == 0) return Array.Empty<byte>();
+            if (byteCount == 0)
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
+                return Array.Empty<byte>();
+#endif
 
             byte[] result = new byte[byteCount];
 

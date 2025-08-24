@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 
 namespace QingYi.Core.Compression
 {
@@ -21,7 +22,11 @@ namespace QingYi.Core.Compression
         {
             // 如果输入为空数组，直接返回空数组
             if (data == null || data.Length == 0)
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
                 return Array.Empty<byte>();
+#endif
 
             using (var outputStream = new MemoryStream())
             {
@@ -81,7 +86,11 @@ namespace QingYi.Core.Compression
         public static byte[] Decompress(byte[] compressedData)
         {
             if (compressedData == null || compressedData.Length == 0)
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
                 return Array.Empty<byte>();
+#endif
 
             using (var inputStream = new MemoryStream(compressedData))
             using (var deflateStream = new DeflateStream(inputStream, CompressionMode.Decompress))

@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace QingYi.Core.Crypto
 {
+#if NETSTANDARD2_0_OR_GREATER || NET46_OR_GREATER || NET5_0_OR_GREATER || NETCOREAPP
     /// <summary>
     /// Provides AES (Advanced Encryption Standard) encryption and decryption functionality
     /// </summary>
@@ -18,10 +19,9 @@ namespace QingYi.Core.Crypto
     {
 #if NET6_0_OR_GREATER
         private readonly Aes _aesProvider = Aes.Create();
-#else
+#elif NETSTANDARD2_0_OR_GREATER || NET46_OR_GREATER || NET5_0_OR_GREATER || NETCOREAPP
         private readonly AesManaged _aesProvider = new AesManaged();
 #endif
-
         /// <summary>
         /// Gets or sets the encryption key (must be 16, 24 or 32 bytes)
         /// </summary>
@@ -307,7 +307,7 @@ namespace QingYi.Core.Crypto
             }
         }
 #endif
-        #endregion
+    #endregion
 
         #region Static Methods - String Operations
 
@@ -447,5 +447,6 @@ namespace QingYi.Core.Crypto
             return bytes;
         }
     }
+#endif
 }
 #endif

@@ -40,6 +40,7 @@ namespace QingYi.Core.FileUtility.UserProfile
         /// </summary>
         public static string AppDataRomingPath { get; }
 
+#if !NETSTANDARD1_6 && !NETSTANDARD1_5
         // Static constructor to initialize all static properties.
         static Profile()
         {
@@ -49,6 +50,7 @@ namespace QingYi.Core.FileUtility.UserProfile
             AppDataLoaclLowPath = Path.Combine(AppDataPath, "LocalLow");
             AppDataRomingPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         }
+#endif
     }
 
 }

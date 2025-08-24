@@ -1,4 +1,4 @@
-﻿#if !NETFRAMEWORK
+﻿#if !NETFRAMEWORK && NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER || NETCOREAPP
 using System;
 using System.IO;
 using System.Threading;

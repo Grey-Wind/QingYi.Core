@@ -1,12 +1,13 @@
-﻿using System;
+﻿#if !BROWSER
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
-#if !BROWSER
 namespace QingYi.Core.Shell
 {
+#if !NETSTANDARD1_6 && !NETSTANDARD1_5
     public static partial class ShellHelper
     {
         private static async Task<ShellResult> ExecuteWindowsCommandAsync(string command, ShellType shellType, bool useAdmin)
@@ -85,5 +86,6 @@ namespace QingYi.Core.Shell
             return result;
         }
     }
+#endif
 }
 #endif

@@ -1,4 +1,5 @@
-﻿using System.IO.MemoryMappedFiles;
+﻿#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER
+using System.IO.MemoryMappedFiles;
 using System.IO;
 using System.Threading.Tasks;
 using System;
@@ -486,3 +487,4 @@ namespace QingYi.Core.FileUtility.IO
 }
 
 #pragma warning restore 0419
+#endif

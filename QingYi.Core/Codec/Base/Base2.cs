@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER || NET461_OR_GREATER || NETCOREAPP
+using System.Text;
 using System;
 
 #pragma warning disable SYSLIB0001, CS0618, CA1510
@@ -308,3 +309,4 @@ namespace QingYi.Core.Codec.Base
         public static byte[] DecodeBase2(this string base2) => Base2.Base2ToBytes(base2);
     }
 }
+#endif
