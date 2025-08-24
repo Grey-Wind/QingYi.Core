@@ -1,3 +1,4 @@
+#if !NETFRAMEWORK
 namespace QingYi.Core.FileUtility.IO
 {
 #if NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -365,7 +366,7 @@ namespace QingYi.Core.FileUtility.IO
             }
         }
     }
-#elif NETSTANDARD2_0
+#else
     using System;
     using System.IO;
     using System.Threading.Tasks;
@@ -694,4 +695,4 @@ namespace QingYi.Core.FileUtility.IO
     }
 #endif
 }
-
+#endif
