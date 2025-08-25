@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MatrixTest", "Test\MatrixTest\MatrixTest.csproj", "{91C7FD48-4777-47DA-A96C-4E11706CF08B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{44E1A843-CC4A-489D-9531-2D345DC88DA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44E1A843-CC4A-489D-9531-2D345DC88DA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{44E1A843-CC4A-489D-9531-2D345DC88DA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91C7FD48-4777-47DA-A96C-4E11706CF08B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91C7FD48-4777-47DA-A96C-4E11706CF08B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91C7FD48-4777-47DA-A96C-4E11706CF08B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91C7FD48-4777-47DA-A96C-4E11706CF08B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,6 +74,7 @@ Global
 		{F3FC6D67-33E1-BC8E-7B29-29A187CACF62} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{5180316D-7A91-94A8-CAE2-D83EE3859616} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{44E1A843-CC4A-489D-9531-2D345DC88DA5} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{91C7FD48-4777-47DA-A96C-4E11706CF08B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7D88F510-B9CF-49DB-BEF1-912E80258CED}
