@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace QingYi.Core.Math.MatrixCalc
+namespace QingYi.Core.Mathematics.MatrixCalc
 {
     class MatrixIntOp
     {

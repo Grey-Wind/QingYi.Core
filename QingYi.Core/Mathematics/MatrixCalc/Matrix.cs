@@ -1,4 +1,4 @@
-﻿namespace QingYi.Core.Math.MatrixCalc
+﻿namespace QingYi.Core.Mathematics.MatrixCalc
 {
     /// <summary>
     /// Represents a mathematical matrix and provides various matrix operations.<br />
