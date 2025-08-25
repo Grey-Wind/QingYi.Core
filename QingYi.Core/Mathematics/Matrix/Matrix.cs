@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -13,7 +14,6 @@ namespace QingYi.Core.Mathematics.Matrix
     /// High-performance matrix class supporting multiple numeric types and operations
     /// </summary>
     /// <typeparam name="T">Numeric type (double, float, int, etc.)</typeparam>
-    [JsonConverter(typeof(MatrixJsonConverter<>))]
     public sealed class Matrix<T> : IDisposable where T : unmanaged, INumber<T>
     {
         private readonly Memory<T> _data;
@@ -341,6 +341,50 @@ namespace QingYi.Core.Mathematics.Matrix
             }
 
             return matrix;
+        }
+
+        /// <summary>
+        /// Serialize matrix to JSON
+        /// </summary>
+        /// <returns>JSON string representation</returns>
+        public string ToJson()
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+
+            return JsonSerializer.Serialize(new MatrixJsonData<T>
+            {
+                Rows = _rows,
+                Cols = _cols,
+                Data = ToFlatArray()
+            }, options);
+        }
+
+        /// <summary>
+        /// Deserialize matrix from JSON
+        /// </summary>
+        /// <param name="json">JSON string</param>
+        /// <returns>Matrix object</returns>
+        public static Matrix<T> FromJson(string json)
+        {
+            var data = JsonSerializer.Deserialize<MatrixJsonData<T>>(json);
+
+            if (data.Rows <= 0 || data.Cols <= 0 || data.Data == null || data.Data.Length != data.Rows * data.Cols)
+                throw new JsonException("Invalid matrix data");
+
+            var memory = new Memory<T>(data.Data);
+            return new Matrix<T>(memory, data.Rows, data.Cols, false);
+        }
+
+        /// <summary>
+        /// Convert matrix to flat array
+        /// </summary>
+        /// <returns>Flat array representation</returns>
+        internal T[] ToFlatArray()
+        {
+            return _data.ToArray();
         }
 
         /// <summary>
