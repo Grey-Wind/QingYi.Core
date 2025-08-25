@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET47_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER || NETCOREAPP
+using System;
 using System.Collections.Generic;
 
 namespace QingYi.Core.Compression
@@ -217,3 +218,4 @@ namespace QingYi.Core.Compression
         }
     }
 }
+#endif

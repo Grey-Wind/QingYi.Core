@@ -1,3 +1,4 @@
+#if !NETFRAMEWORK && NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER || NETCOREAPP
 namespace QingYi.Core.FileUtility.IO
 {
 #if NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -20,18 +21,11 @@ namespace QingYi.Core.FileUtility.IO
     /// <item><description>IL-optimized memory copying</description></item>
     /// <item><description>Async support with proper cancellation</description></item>
     /// <item><description>Automatic file size management</description></item>
+    /// <item><description>Memory-mapped I/O for large writes</description></item>
     /// </list>
     /// </para>
     /// <para>
     /// Thread safety: Instance methods are not thread-safe. External synchronization required for concurrent access.
-    /// </para>
-    /// <para>
-    /// Best practices:
-    /// <list type="number">
-    /// <item><description>Reuse instances for multiple writes to same file</description></item>
-    /// <item><description>Choose buffer size matching typical write sizes</description></item>
-    /// <item><description>Prefer async methods for UI/server applications</description></item>
-    /// </list>
     /// </para>
     /// </remarks>
     public sealed class FileWriter : IDisposable
@@ -42,7 +36,7 @@ namespace QingYi.Core.FileUtility.IO
         private readonly int _bufferSize;
         private readonly bool _leaveOpen;
 
-        // IL优化的内存拷贝方法
+        // IL-optimized memory copier
         private static readonly MemoryCopier _memoryCopier = new MemoryCopier();
 
         /// <summary>
@@ -54,22 +48,23 @@ namespace QingYi.Core.FileUtility.IO
         /// <param name="access">File access type (default: Write)</param>
         /// <param name="share">File sharing permissions (default: Read)</param>
         /// <param name="options">Advanced file options (default: None)</param>
-        /// <exception cref="IOException">File system access failure</exception>
-        /// <exception cref="UnauthorizedAccessException">Insufficient permissions</exception>
+        /// <exception cref="ArgumentNullException">Thrown when path is null</exception>
+        /// <exception cref="IOException">Thrown for file system access failures</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown for insufficient permissions</exception>
         public FileWriter(string path,
                  int bufferSize = 81920,
                  FileMode mode = FileMode.Create,
                  FileAccess access = FileAccess.Write,
                  FileShare share = FileShare.Read,
                  FileOptions options = FileOptions.None)
-    : this(new FileStream(
-        path,
-        mode,
-        access,
-        share,
-        bufferSize,
-        options
-    ), bufferSize, false)
+            : this(new FileStream(
+                path,
+                mode,
+                access,
+                share,
+                bufferSize,
+                options
+            ), bufferSize, false)
         {
         }
 
@@ -79,11 +74,13 @@ namespace QingYi.Core.FileUtility.IO
         /// <param name="stream">Pre-opened writable file stream</param>
         /// <param name="bufferSize">Buffer size in bytes (default: 81,920 bytes)</param>
         /// <param name="leaveOpen">Keep stream open after disposal (default: false)</param>
-        /// <exception cref="ArgumentNullException"><paramref name="stream"/> is null</exception>
-        /// <exception cref="ArgumentException">Stream is not writable</exception>
+        /// <exception cref="ArgumentNullException">Thrown when stream is null</exception>
+        /// <exception cref="ArgumentException">Thrown when stream is not writable</exception>
         public FileWriter(FileStream stream, int bufferSize = 81920, bool leaveOpen = false)
         {
             _fileStream = stream ?? throw new ArgumentNullException(nameof(stream));
+            if (!stream.CanWrite) throw new ArgumentException("Stream must be writable", nameof(stream));
+
             _bufferSize = bufferSize;
             _buffer = new byte[bufferSize];
             _bufferPosition = 0;
@@ -91,24 +88,23 @@ namespace QingYi.Core.FileUtility.IO
         }
 
         /// <summary>
-        /// Buffered write operation for byte data.
+        /// Writes data to the file using buffered or direct strategy based on size.
         /// </summary>
-        /// <param name="data">Data to write</param>
+        /// <param name="data">Data to write as ReadOnlySpan</param>
         /// <remarks>
         /// <para>
         /// Write strategy:
         /// <list type="number">
-        /// <item><description>Buffer data until full</description></item>
-        /// <item><description>Auto-flush full buffer to disk</description></item>
-        /// <item><description>Use direct write for data larger than buffer</description></item>
+        /// <item><description>Data smaller than buffer uses buffered writing</description></item>
+        /// <item><description>Data larger than buffer uses direct writing</description></item>
+        /// <item><description>Very large blocks (>1MB) use memory-mapped I/O</description></item>
         /// </list>
         /// </para>
         /// <para>
         /// Performance characteristics:
         /// <list type="bullet">
         /// <item><description>Zero allocations for buffered writes</description></item>
-        /// <item><description>IL-optimized memory copy (x10 faster than Array.Copy)</description></item>
-        /// <item><description>Memory-mapped I/O for large blocks (>1MB)</description></item>
+        /// <item><description>IL-optimized memory copy (faster than Array.Copy)</description></item>
         /// </list>
         /// </para>
         /// </remarks>
@@ -135,7 +131,7 @@ namespace QingYi.Core.FileUtility.IO
                     fixed (byte* src = &data[offset])
                     fixed (byte* dest = &_buffer[_bufferPosition])
                     {
-                        // 参数顺序修正为：目标地址，源地址
+                        // Parameter order: destination, source, length
                         _memoryCopier.Copy((IntPtr)dest, (IntPtr)src, copyBytes);
                     }
                 }
@@ -144,7 +140,7 @@ namespace QingYi.Core.FileUtility.IO
                 offset += copyBytes;
                 remaining -= copyBytes;
 
-                // 直接处理超大块数据
+                // Direct write for large remaining blocks
                 if (remaining > _bufferSize)
                 {
                     Flush();
@@ -155,12 +151,12 @@ namespace QingYi.Core.FileUtility.IO
         }
 
         /// <summary>
-        /// Asynchronous version of write operation with cancellation support.
+        /// Asynchronously writes data to the file.
         /// </summary>
-        /// <inheritdoc cref="Write"/>
-        /// <param name="data">Data to write</param>
+        /// <param name="data">Data to write as ReadOnlyMemory</param>
         /// <param name="cancellationToken">Cancellation token for async operation</param>
-        /// <returns>ValueTask representing async operation</returns>
+        /// <returns>Task representing the async operation</returns>
+        /// <inheritdoc cref="Write"/>
         public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
         {
             if (data.IsEmpty) return;
@@ -179,7 +175,6 @@ namespace QingYi.Core.FileUtility.IO
 
                 int copyBytes = Math.Min(available, remaining);
 
-                // 拷贝到缓冲区
                 unsafe
                 {
                     fixed (byte* src = &data.Span[offset])
@@ -193,7 +188,7 @@ namespace QingYi.Core.FileUtility.IO
                 offset += copyBytes;
                 remaining -= copyBytes;
 
-                // 关键修复1：修正超大块判断逻辑
+                // Direct write for large remaining blocks
                 if (remaining > 0 && remaining >= available)
                 {
                     await FlushAsync(cancellationToken).ConfigureAwait(false);
@@ -207,49 +202,52 @@ namespace QingYi.Core.FileUtility.IO
             }
         }
 
-        // 直接写入方法
+        /// <summary>
+        /// Directly writes large blocks using memory-mapped I/O
+        /// </summary>
         private async ValueTask WriteDirectAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
-            // 确保文件大小足够
+            // Ensure file is large enough
             long requiredLength = _fileStream.Position + data.Length;
             if (_fileStream.Length < requiredLength)
             {
                 _fileStream.SetLength(requiredLength);
             }
 
-            // 使用内存映射写入
+            // Use memory-mapped file for efficient large writes
             using (var mmFile = MemoryMappedFile.CreateFromFile(
-                _fileStream, // 直接传入FileStream对象
-                null,        // 映射名称（不需要）
-                data.Length, // 映射大小
+                _fileStream,
+                null,
+                data.Length,
                 MemoryMappedFileAccess.ReadWrite,
                 HandleInheritability.None,
-                false))      // 是否保留文件流打开
+                false))
             {
-                using (var accessor = mmFile.CreateViewAccessor(0, data.Length))
+                using var accessor = mmFile.CreateViewAccessor(0, data.Length);
+                unsafe
                 {
-                    unsafe
+                    byte* ptr = null;
+                    accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptr);
+                    try
                     {
-                        byte* ptr = null;
-                        accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptr);
-                        try
-                        {
-                            // 将数据拷贝到映射内存
-                            data.Span.CopyTo(new Span<byte>(ptr, data.Length));
-                        }
-                        finally
-                        {
-                            accessor.SafeMemoryMappedViewHandle.ReleasePointer();
-                        }
+                        // Copy data directly to mapped memory
+                        data.Span.CopyTo(new Span<byte>(ptr, data.Length));
+                    }
+                    finally
+                    {
+                        accessor.SafeMemoryMappedViewHandle.ReleasePointer();
                     }
                 }
             }
 
-            // 更新文件流位置
+            // Update file position
             _fileStream.Position += data.Length;
             await _fileStream.FlushAsync(cancellationToken);
         }
 
+        /// <summary>
+        /// Directly writes data without buffering
+        /// </summary>
         private void WriteDirect(ReadOnlySpan<byte> data)
         {
             unsafe
@@ -263,24 +261,15 @@ namespace QingYi.Core.FileUtility.IO
         }
 
         /// <summary>
-        /// Forces buffered data to be written to disk.
+        /// Flushes any buffered data to disk
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// Flush occurs automatically when:
+        /// Flushing occurs automatically when:
         /// <list type="bullet">
         /// <item><description>Buffer becomes full</description></item>
         /// <item><description>Writing data larger than buffer size</description></item>
         /// <item><description>Disposing the instance</description></item>
         /// </list>
-        /// </para>
-        /// <para>
-        /// Manual flushes are recommended:
-        /// <list type="bullet">
-        /// <item><description>Before long pauses between writes</description></item>
-        /// <item><description>When requiring write durability</description></item>
-        /// </list>
-        /// </para>
         /// </remarks>
         public void Flush()
         {
@@ -292,33 +281,30 @@ namespace QingYi.Core.FileUtility.IO
         }
 
         /// <summary>
-        /// Asynchronously flushes buffered data to disk.
+        /// Asynchronously flushes any buffered data to disk
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token for async operation</param>
+        /// <returns>Task representing the async operation</returns>
         /// <inheritdoc cref="Flush"/>
         public async ValueTask FlushAsync(CancellationToken cancellationToken = default)
         {
             if (_bufferPosition > 0)
             {
-                await _fileStream.WriteAsync(_buffer, 0, _bufferPosition, cancellationToken)
+                await _fileStream.WriteAsync(_buffer.AsMemory(0, _bufferPosition), cancellationToken)
                     .ConfigureAwait(false);
                 _bufferPosition = 0;
             }
         }
 
         /// <summary>
-        /// Releases all resources and optionally closes the underlying stream.
+        /// Releases all resources and flushes remaining data
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// Finalization sequence:
+        /// Disposal sequence:
         /// <list type="number">
         /// <item><description>Flush remaining buffer</description></item>
-        /// <item><description>Close file stream if <c>leaveOpen</c> is false</description></item>
+        /// <item><description>Close file stream if leaveOpen is false</description></item>
         /// </list>
-        /// </para>
-        /// <para>
-        /// Warning: Failure to dispose may result in data loss and file handle leaks.
-        /// </para>
         /// </remarks>
         public void Dispose()
         {
@@ -330,8 +316,9 @@ namespace QingYi.Core.FileUtility.IO
         }
 
         /// <summary>
-        /// Asynchronous resource cleanup implementation.
+        /// Asynchronously releases all resources and flushes remaining data
         /// </summary>
+        /// <returns>ValueTask representing the async operation</returns>
         /// <inheritdoc cref="Dispose"/>
         public async ValueTask DisposeAsync()
         {
@@ -342,25 +329,20 @@ namespace QingYi.Core.FileUtility.IO
             }
         }
 
-        // IL优化的内存拷贝实现
+        /// <summary>
+        /// Provides IL-optimized memory copying
+        /// </summary>
         private sealed class MemoryCopier
         {
             /// <summary>
-            /// IL-optimized memory copy delegate using Cpblk instruction.
+            /// Delegate for fast memory copying using Cpblk IL instruction
             /// </summary>
-            /// <remarks>
-            /// <para>
-            /// Characteristics:
-            /// <list type="bullet">
-            /// <item><description>20-30% faster than Buffer.MemoryCopy</description></item>
-            /// <item><description>Requires unsafe code</description></item>
-            /// <item><description>Parameter order: destination → source → length</description></item>
-            /// </list>
-            /// </para>
-            /// </remarks>
             internal delegate void CopyMethod(IntPtr dest, IntPtr src, int count);
             public readonly CopyMethod Copy;
 
+            /// <summary>
+            /// Initializes the memory copier with dynamically generated IL
+            /// </summary>
             public MemoryCopier()
             {
                 var dynamicMethod = new DynamicMethod(
@@ -371,19 +353,18 @@ namespace QingYi.Core.FileUtility.IO
                     true);
 
                 var il = dynamicMethod.GetILGenerator();
-                // 修正参数顺序：目标 -> 源 -> 长度
-                il.Emit(OpCodes.Ldarg_0); // 目标地址
-                il.Emit(OpCodes.Ldarg_1); // 源地址
-                il.Emit(OpCodes.Ldarg_2); // 长度
-                il.Emit(OpCodes.Cpblk);
+                // Parameter order: destination, source, length
+                il.Emit(OpCodes.Ldarg_0); // Destination address
+                il.Emit(OpCodes.Ldarg_1); // Source address
+                il.Emit(OpCodes.Ldarg_2); // Length
+                il.Emit(OpCodes.Cpblk);   // Copy block instruction
                 il.Emit(OpCodes.Ret);
 
                 Copy = (CopyMethod)dynamicMethod.CreateDelegate(typeof(CopyMethod));
             }
         }
     }
-#elif NETSTANDARD2_0
-
+#else
     using System;
     using System.IO;
     using System.Threading.Tasks;
@@ -391,6 +372,24 @@ namespace QingYi.Core.FileUtility.IO
     using System.IO.MemoryMappedFiles;
     using System.Runtime.InteropServices;
 
+    /// <summary>
+    /// Provides high-performance buffered file writing for .NET Standard 2.0
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Features:
+    /// <list type="bullet">
+    /// <item><description>Buffered and direct write modes</description></item>
+    /// <item><description>Optimized memory copying using Buffer.MemoryCopy</description></item>
+    /// <item><description>Async support with cancellation</description></item>
+    /// <item><description>Memory-mapped I/O for large writes</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// Note: This implementation uses Buffer.MemoryCopy instead of IL-optimized copying
+    /// available in newer framework versions.
+    /// </para>
+    /// </remarks>
     public sealed class FileWriter : IDisposable
     {
         private readonly FileStream _fileStream;
@@ -399,9 +398,21 @@ namespace QingYi.Core.FileUtility.IO
         private readonly int _bufferSize;
         private readonly bool _leaveOpen;
 
-        // 使用 Buffer.MemoryCopy 替代 IL 优化的拷贝
+        // Uses Buffer.MemoryCopy for memory operations
         private static readonly MemoryCopier _memoryCopier = new MemoryCopier();
 
+        /// <summary>
+        /// Initializes a new instance writing to specified file path
+        /// </summary>
+        /// <param name="path">Target file path</param>
+        /// <param name="bufferSize">Buffer size in bytes (default: 81,920 bytes)</param>
+        /// <param name="mode">File creation mode (default: Create)</param>
+        /// <param name="access">File access type (default: Write)</param>
+        /// <param name="share">File sharing permissions (default: Read)</param>
+        /// <param name="options">Advanced file options (default: None)</param>
+        /// <exception cref="ArgumentNullException">Thrown when path is null</exception>
+        /// <exception cref="IOException">Thrown for file system errors</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown for permission issues</exception>
         public FileWriter(string path,
             int bufferSize = 81920,
             FileMode mode = FileMode.Create,
@@ -419,15 +430,41 @@ namespace QingYi.Core.FileUtility.IO
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance using an existing file stream
+        /// </summary>
+        /// <param name="stream">Pre-opened writable file stream</param>
+        /// <param name="bufferSize">Buffer size in bytes (default: 81,920 bytes)</param>
+        /// <param name="leaveOpen">Keep stream open after disposal (default: false)</param>
+        /// <exception cref="ArgumentNullException">Thrown when stream is null</exception>
+        /// <exception cref="ArgumentException">Thrown when stream is not writable</exception>
         public FileWriter(FileStream stream, int bufferSize = 81920, bool leaveOpen = false)
         {
             _fileStream = stream ?? throw new ArgumentNullException(nameof(stream));
+            if (!stream.CanWrite) throw new ArgumentException("Stream must be writable", nameof(stream));
+
             _bufferSize = bufferSize;
             _buffer = new byte[bufferSize];
             _bufferPosition = 0;
             _leaveOpen = leaveOpen;
         }
 
+        /// <summary>
+        /// Writes data to the file using buffered or direct strategy
+        /// </summary>
+        /// <param name="data">Data to write</param>
+        /// <param name="offset">Offset in data array</param>
+        /// <param name="count">Number of bytes to write</param>
+        /// <remarks>
+        /// <para>
+        /// Write strategy:
+        /// <list type="number">
+        /// <item><description>Buffers data until full</description></item>
+        /// <item><description>Auto-flushes full buffer to disk</description></item>
+        /// <item><description>Direct writes for data larger than buffer</description></item>
+        /// </list>
+        /// </para>
+        /// </remarks>
         public void Write(byte[] data, int offset, int count)
         {
             if (data == null || count == 0) return;
@@ -472,6 +509,15 @@ namespace QingYi.Core.FileUtility.IO
             }
         }
 
+        /// <summary>
+        /// Asynchronously writes data to the file
+        /// </summary>
+        /// <param name="data">Data to write</param>
+        /// <param name="offset">Offset in data array</param>
+        /// <param name="count">Number of bytes to write</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Task representing async operation</returns>
+        /// <inheritdoc cref="Write"/>
         public async Task WriteAsync(byte[] data, int offset, int count, CancellationToken cancellationToken = default)
         {
             if (data == null || count == 0) return;
@@ -522,6 +568,9 @@ namespace QingYi.Core.FileUtility.IO
             }
         }
 
+        /// <summary>
+        /// Directly writes large blocks using memory-mapped I/O
+        /// </summary>
         private async Task WriteDirectAsync(byte[] data, int offset, int count, CancellationToken cancellationToken)
         {
             long requiredLength = _fileStream.Position + count;
@@ -560,11 +609,17 @@ namespace QingYi.Core.FileUtility.IO
             await _fileStream.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Directly writes data without buffering
+        /// </summary>
         private void WriteDirect(byte[] data, int offset, int count)
         {
             _fileStream.Write(data, offset, count);
         }
 
+        /// <summary>
+        /// Flushes any buffered data to disk
+        /// </summary>
         public void Flush()
         {
             if (_bufferPosition > 0)
@@ -574,6 +629,11 @@ namespace QingYi.Core.FileUtility.IO
             }
         }
 
+        /// <summary>
+        /// Asynchronously flushes any buffered data to disk
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Task representing async operation</returns>
         public async Task FlushAsync(CancellationToken cancellationToken = default)
         {
             if (_bufferPosition > 0)
@@ -584,6 +644,9 @@ namespace QingYi.Core.FileUtility.IO
             }
         }
 
+        /// <summary>
+        /// Releases all resources and flushes remaining data
+        /// </summary>
         public void Dispose()
         {
             Flush();
@@ -593,6 +656,10 @@ namespace QingYi.Core.FileUtility.IO
             }
         }
 
+        /// <summary>
+        /// Asynchronously releases all resources and flushes remaining data
+        /// </summary>
+        /// <returns>Task representing async operation</returns>
         public async Task DisposeAsync()
         {
             await FlushAsync().ConfigureAwait(false);
@@ -602,9 +669,17 @@ namespace QingYi.Core.FileUtility.IO
             }
         }
 
-        // 替代方案：使用 Buffer.MemoryCopy
+        /// <summary>
+        /// Provides memory copying using Buffer.MemoryCopy
+        /// </summary>
         private sealed class MemoryCopier
         {
+            /// <summary>
+            /// Copies memory using Buffer.MemoryCopy
+            /// </summary>
+            /// <param name="dest">Destination pointer</param>
+            /// <param name="src">Source pointer</param>
+            /// <param name="byteCount">Number of bytes to copy</param>
             public unsafe void Copy(byte* dest, byte* src, int byteCount)
             {
                 Buffer.MemoryCopy(
@@ -618,4 +693,4 @@ namespace QingYi.Core.FileUtility.IO
     }
 #endif
 }
-
+#endif

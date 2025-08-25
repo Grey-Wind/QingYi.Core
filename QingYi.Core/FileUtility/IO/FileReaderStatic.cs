@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NETSTANDARD2_0_OR_GREATER || NET7_0_OR_GREATER
+using System;
 using System.IO;
 using System.Text;
 
@@ -115,3 +116,4 @@ namespace QingYi.Core.FileUtility.IO
         }
     }
 }
+#endif

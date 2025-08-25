@@ -1,3 +1,4 @@
+#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER || NET46_OR_GREATER || NETCOREAPP
 using System;
 using System.IO;
 using System.Security.Cryptography;
@@ -151,7 +152,7 @@ namespace QingYi.Core.Crypto
             }
         }
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         /// <summary>
         /// Encrypts data from a read-only span using DES.
         /// </summary>
@@ -310,3 +311,4 @@ namespace QingYi.Core.Crypto
 #endif
     }
 }
+#endif

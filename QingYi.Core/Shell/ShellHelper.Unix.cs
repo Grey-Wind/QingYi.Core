@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace QingYi.Core.Shell
 {
+#if !NETSTANDARD1_6 && !NETSTANDARD1_5
     public static partial class ShellHelper
     {
         private static async Task<ShellResult> ExecuteUnixCommandAsync(string command, bool useAdmin)
@@ -51,5 +52,6 @@ namespace QingYi.Core.Shell
             return result;
         }
     }
+#endif
 }
 #endif

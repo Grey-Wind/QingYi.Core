@@ -6,19 +6,25 @@ using System.Text;
 namespace QingYi.Core.Codec.Base
 {
     /// <summary>
-    /// Base45 codec library.<br />
-    /// Base45 编解码库。
+    /// Provides Base45 encoding and decoding functionality
     /// </summary>
     public unsafe class Base45
     {
+        // Base45 character set (45 characters)
         private const string EncodingTable = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+        // Decoding lookup table (maps characters to their values)
         private static readonly byte[] DecodingTable = new byte[256];
 
+        /// <summary>
+        /// Static constructor initializes the decoding table
+        /// </summary>
         static Base45()
         {
+            // Initialize all entries as invalid (0xFF)
             for (int i = 0; i < DecodingTable.Length; i++)
                 DecodingTable[i] = 0xFF;
 
+            // Populate valid characters in the decoding table
             for (byte i = 0; i < EncodingTable.Length; i++)
             {
                 char c = EncodingTable[i];
@@ -27,19 +33,18 @@ namespace QingYi.Core.Codec.Base
         }
 
         /// <summary>
-        /// Gets the base45-encoded character set.<br />
-        /// 获取 Base45 编码的字符集。
+        /// Gets the Base45 character set used for encoding
         /// </summary>
-        /// <returns>The base45-encoded character set.<br />Base45 编码的字符集</returns>
+        /// <returns>The Base45 character set string</returns>
         public override string ToString() => EncodingTable;
 
         /// <summary>
-        /// Base45 encoding of the string.<br />
-        /// 将字符串进行Base45编码。
+        /// Encodes a string to Base45 using the specified text encoding
         /// </summary>
-        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
-        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
-        /// <returns>The encoded string.<br />被编码的字符串</returns>
+        /// <param name="input">String to encode</param>
+        /// <param name="encoding">Text encoding to use (default: UTF-8)</param>
+        /// <returns>Base45 encoded string</returns>
+        /// <exception cref="ArgumentNullException">Thrown when input is null</exception>
         public static string Encode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
@@ -48,12 +53,13 @@ namespace QingYi.Core.Codec.Base
         }
 
         /// <summary>
-        /// Base45 decoding of the string.<br />
-        /// 将字符串进行Base45解码。
+        /// Decodes a Base45 string to text using the specified encoding
         /// </summary>
-        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
-        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
-        /// <returns>The decoded string.<br />被解码的字符串</returns>
+        /// <param name="input">Base45 encoded string</param>
+        /// <param name="encoding">Text encoding to use (default: UTF-8)</param>
+        /// <returns>Decoded string</returns>
+        /// <exception cref="ArgumentNullException">Thrown when input is null</exception>
+        /// <exception cref="ArgumentException">Thrown for invalid Base45 strings</exception>
         public static string Decode(string input, StringEncoding encoding = StringEncoding.UTF8)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
@@ -61,104 +67,155 @@ namespace QingYi.Core.Codec.Base
             return GetEncoding(encoding).GetString(bytes);
         }
 
+        /// <summary>
+        /// Encodes binary data to a Base45 string
+        /// </summary>
+        /// <param name="b">Binary data to encode</param>
+        /// <returns>Base45 encoded string</returns>
         private static string EncodeBytes(byte[] b)
         {
             int inputLength = b.Length;
+            // Calculate output length: 2 bytes become 3 chars, 1 byte becomes 2 chars
             int outputLength = inputLength / 2 * 3 + (inputLength % 2 == 1 ? 2 : 0);
             char[] output = new char[outputLength];
 
-            fixed (byte* inputPtr = b)
-            fixed (char* outputPtr = output)
+            unsafe
             {
-                byte* ip = inputPtr;
-                char* op = outputPtr;
-
-                for (int i = 0; i < inputLength - 1; i += 2)
+                fixed (byte* inputPtr = b)
+                fixed (char* outputPtr = output)
                 {
-                    int value = *ip++ << 8 | *ip++;
-                    int d3 = value % 45;
-                    value /= 45;
-                    int d2 = value % 45;
-                    value /= 45;
-                    int d1 = value;
+                    byte* ip = inputPtr;
+                    char* op = outputPtr;
 
-                    *op++ = EncodingTable[d1];
-                    *op++ = EncodingTable[d2];
-                    *op++ = EncodingTable[d3];
-                }
+                    // Process complete 2-byte pairs
+                    for (int i = 0; i < inputLength - 1; i += 2)
+                    {
+                        // Combine 2 bytes into a 16-bit value
+                        int value = *ip++ << 8 | *ip++;
+                        // Split into 3 Base45 digits
+                        int d3 = value % 45;
+                        value /= 45;
+                        int d2 = value % 45;
+                        value /= 45;
+                        int d1 = value;
 
-                if (inputLength % 2 == 1)
-                {
-                    int value = *ip;
-                    int d2 = value % 45;
-                    value /= 45;
-                    int d1 = value;
+                        // Convert digits to characters
+                        *op++ = EncodingTable[d1];
+                        *op++ = EncodingTable[d2];
+                        *op++ = EncodingTable[d3];
+                    }
 
-                    *op++ = EncodingTable[d1];
-                    *op++ = EncodingTable[d2];
+                    // Process remaining single byte if input length is odd
+                    if (inputLength % 2 == 1)
+                    {
+                        int value = *ip;
+                        // Split into 2 Base45 digits
+                        int d2 = value % 45;
+                        value /= 45;
+                        int d1 = value;
+
+                        // Convert digits to characters
+                        *op++ = EncodingTable[d1];
+                        *op++ = EncodingTable[d2];
+                    }
                 }
             }
             return new string(output);
         }
 
+        /// <summary>
+        /// Decodes a Base45 string to binary data
+        /// </summary>
+        /// <param name="input">Base45 encoded string</param>
+        /// <returns>Decoded binary data</returns>
+        /// <exception cref="ArgumentException">Thrown for invalid Base45 strings</exception>
+        /// <exception cref="FormatException">Thrown for invalid Base45 characters or values</exception>
         private static byte[] DecodeString(string input)
         {
             int inputLength = input.Length;
-            if (inputLength == 0) return Array.Empty<byte>();
+            if (inputLength == 0)
+#if NET45 || NET451 || NET452
+                return new byte[] { };
+#else
+                return Array.Empty<byte>();
+#endif
 
             int remainder = inputLength % 3;
+            // Base45 requires length to be multiple of 3 or remainder 2
             if (remainder == 1)
                 throw new ArgumentException("Invalid Base45 string length.");
 
+            // Calculate output length: 3 chars become 2 bytes, 2 chars become 1 byte
             int outputLength = inputLength / 3 * 2 + (remainder == 2 ? 1 : 0);
             byte[] output = new byte[outputLength];
 
-            fixed (char* inputPtr = input)
-            fixed (byte* outputPtr = output)
+            unsafe
             {
-                char* inPtr = inputPtr;
-                byte* outPtr = outputPtr;
-
-                for (int i = 0; i < inputLength - remainder; i += 3)
+                fixed (char* inputPtr = input)
+                fixed (byte* outputPtr = output)
                 {
-                    int d1 = GetValue(*inPtr++);
-                    int d2 = GetValue(*inPtr++);
-                    int d3 = GetValue(*inPtr++);
+                    char* inPtr = inputPtr;
+                    byte* outPtr = outputPtr;
 
-                    int value = d1 * 45 * 45 + d2 * 45 + d3;
-                    if (value > 0xFFFF) throw new FormatException("Invalid Base45 triplet.");
+                    // Process complete triplets
+                    for (int i = 0; i < inputLength - remainder; i += 3)
+                    {
+                        // Get values for each character
+                        int d1 = GetValue(*inPtr++);
+                        int d2 = GetValue(*inPtr++);
+                        int d3 = GetValue(*inPtr++);
 
-                    *outPtr++ = (byte)(value >> 8);
-                    *outPtr++ = (byte)value;
-                }
+                        // Combine into original value
+                        int value = d1 * 45 * 45 + d2 * 45 + d3;
+                        if (value > 0xFFFF) throw new FormatException("Invalid Base45 triplet.");
 
-                if (remainder == 2)
-                {
-                    int d1 = GetValue(*inPtr++);
-                    int d2 = GetValue(*inPtr++);
+                        // Split into 2 bytes
+                        *outPtr++ = (byte)(value >> 8);
+                        *outPtr++ = (byte)value;
+                    }
 
-                    int value = d1 * 45 + d2;
-                    if (value > 0xFF) throw new FormatException("Invalid Base45 pair.");
-                    *outPtr++ = (byte)value;
+                    // Process remaining pair if exists
+                    if (remainder == 2)
+                    {
+                        int d1 = GetValue(*inPtr++);
+                        int d2 = GetValue(*inPtr++);
+
+                        int value = d1 * 45 + d2;
+                        if (value > 0xFF) throw new FormatException("Invalid Base45 pair.");
+                        *outPtr++ = (byte)value;
+                    }
                 }
             }
 
             return output;
         }
 
+        /// <summary>
+        /// Gets the numerical value of a Base45 character
+        /// </summary>
+        /// <param name="c">Character to decode</param>
+        /// <returns>Numerical value of the character</returns>
+        /// <exception cref="FormatException">Thrown for invalid Base45 characters</exception>
         private static int GetValue(char c)
         {
+            // Only ASCII characters are valid
             if (c > 255)
                 throw new FormatException($"Invalid character '{(int)c}'");
 
-            byte v = DecodingTable[c]; // value
+            byte v = DecodingTable[c]; // Get decoded value
 
-            if (v == 0xFF)
+            if (v == 0xFF) // 0xFF marks invalid characters
                 throw new FormatException($"Invalid character '{c}'");
 
             return v;
         }
 
+        /// <summary>
+        /// Gets the encoding object for the specified encoding type
+        /// </summary>
+        /// <param name="encoding">Encoding type</param>
+        /// <returns>Encoding object</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown for unsupported encoding types</exception>
         private static Encoding GetEncoding(StringEncoding encoding)
         {
             switch (encoding)
@@ -186,27 +243,24 @@ namespace QingYi.Core.Codec.Base
     }
 
     /// <summary>
-    /// Static string extension of Base45 codec library.<br />
-    /// Base45 编解码库的静态字符串拓展。
+    /// Provides extension methods for Base45 encoding/decoding of strings
     /// </summary>
     public static class Base45Extension
     {
         /// <summary>
-        /// Base45 encoding of the string.<br />
-        /// 将字符串进行 Base45 编码。
+        /// Encodes a string to Base45 using the specified text encoding
         /// </summary>
-        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
-        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
-        /// <returns>The encoded string.<br />被编码的字符串</returns>
+        /// <param name="input">String to encode</param>
+        /// <param name="encoding">Text encoding to use (default: UTF-8)</param>
+        /// <returns>Base45 encoded string</returns>
         public static string EncodeBase45(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base45.Encode(input, encoding);
 
         /// <summary>
-        /// Base45 decoding of the string.<br />
-        /// 将字符串进行 Base45 解码。
+        /// Decodes a Base45 string to text using the specified encoding
         /// </summary>
-        /// <param name="input">The string to be converted.<br />需要转换的字符串</param>
-        /// <param name="encoding">The encoding of the string.<br />字符串的编码方式</param>
-        /// <returns>The decoded string.<br />被解码的字符串</returns>
+        /// <param name="input">Base45 encoded string</param>
+        /// <param name="encoding">Text encoding to use (default: UTF-8)</param>
+        /// <returns>Decoded string</returns>
         public static string DecodeBase45(this string input, StringEncoding encoding = StringEncoding.UTF8) => Base45.Decode(input, encoding);
     }
 }
