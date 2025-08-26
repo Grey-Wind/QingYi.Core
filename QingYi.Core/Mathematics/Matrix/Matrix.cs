@@ -1,22 +1,23 @@
 ﻿#if NET8_0_OR_GREATER
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace QingYi.Core.Mathematics.Matrix
 {
     /// <summary>
     /// High-performance matrix class supporting multiple numeric types and operations
+    /// Uses decimal internally for precision, with optimized performance for all types
     /// </summary>
     /// <typeparam name="T">Numeric type (double, float, int, etc.)</typeparam>
     public sealed class Matrix<T> : IDisposable where T : unmanaged, INumber<T>
     {
-        private readonly Memory<T> _data;
+        private readonly Memory<decimal> _data;
         private readonly int _rows;
         private readonly int _cols;
         private readonly bool _isPooled;
@@ -36,7 +37,7 @@ namespace QingYi.Core.Mathematics.Matrix
         /// </summary>
         public int Length => _rows * _cols;
 
-        internal Memory<T> Data => _data;
+        internal Memory<decimal> Data => _data;
 
         /// <summary>
         /// Create a matrix from a 2D array
@@ -51,7 +52,32 @@ namespace QingYi.Core.Mathematics.Matrix
             _cols = data.GetLength(1);
             _isPooled = false;
 
-            _data = new T[_rows * _cols];
+            _data = new decimal[_rows * _cols];
+
+            // Copy 2D array data to 1D storage with conversion to decimal
+            for (int i = 0; i < _rows; i++)
+            {
+                for (int j = 0; j < _cols; j++)
+                {
+                    _data.Span[i * _cols + j] = Convert.ToDecimal(data[i, j]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Create a matrix from a 2D decimal array
+        /// </summary>
+        /// <param name="data">2D decimal array data</param>
+        public Matrix(decimal[,] data)
+        {
+            if (data is null)
+                throw new ArgumentNullException(nameof(data));
+
+            _rows = data.GetLength(0);
+            _cols = data.GetLength(1);
+            _isPooled = false;
+
+            _data = new decimal[_rows * _cols];
 
             // Copy 2D array data to 1D storage
             for (int i = 0; i < _rows; i++)
@@ -76,7 +102,7 @@ namespace QingYi.Core.Mathematics.Matrix
             _rows = rows;
             _cols = cols;
             _isPooled = false;
-            _data = new T[rows * cols];
+            _data = new decimal[rows * cols];
         }
 
         /// <summary>
@@ -86,7 +112,7 @@ namespace QingYi.Core.Mathematics.Matrix
         /// <param name="rows">Number of rows</param>
         /// <param name="cols">Number of columns</param>
         /// <param name="isPooled">Whether to use memory pool</param>
-        internal Matrix(Memory<T> data, int rows, int cols, bool isPooled = false)
+        internal Matrix(Memory<decimal> data, int rows, int cols, bool isPooled = false)
         {
             if (data.Length != rows * cols)
                 throw new ArgumentException("Data length does not match matrix dimensions");
@@ -110,15 +136,43 @@ namespace QingYi.Core.Mathematics.Matrix
                 if (row < 0 || row >= _rows || col < 0 || col >= _cols)
                     throw new IndexOutOfRangeException("Index is out of matrix bounds");
 
-                return _data.Span[row * _cols + col];
+                return (T)Convert.ChangeType(_data.Span[row * _cols + col], typeof(T));
             }
             set
             {
                 if (row < 0 || row >= _rows || col < 0 || col >= _cols)
                     throw new IndexOutOfRangeException("Index is out of matrix bounds");
 
-                _data.Span[row * _cols + col] = value;
+                _data.Span[row * _cols + col] = Convert.ToDecimal(value);
             }
+        }
+
+        /// <summary>
+        /// Get element as decimal (avoiding conversion for internal operations)
+        /// </summary>
+        /// <param name="row">Row index</param>
+        /// <param name="col">Column index</param>
+        /// <returns>Matrix element value as decimal</returns>
+        internal decimal GetDecimal(int row, int col)
+        {
+            if (row < 0 || row >= _rows || col < 0 || col >= _cols)
+                throw new IndexOutOfRangeException("Index is out of matrix bounds");
+
+            return _data.Span[row * _cols + col];
+        }
+
+        /// <summary>
+        /// Set element as decimal (avoiding conversion for internal operations)
+        /// </summary>
+        /// <param name="row">Row index</param>
+        /// <param name="col">Column index</param>
+        /// <param name="value">Value to set</param>
+        internal void SetDecimal(int row, int col, decimal value)
+        {
+            if (row < 0 || row >= _rows || col < 0 || col >= _cols)
+                throw new IndexOutOfRangeException("Index is out of matrix bounds");
+
+            _data.Span[row * _cols + col] = value;
         }
 
         /// <summary>
@@ -148,7 +202,7 @@ namespace QingYi.Core.Mathematics.Matrix
             {
                 for (int j = 0; j < size; j++)
                 {
-                    span[i * size + j] = i == j ? T.One : T.Zero;
+                    span[i * size + j] = i == j ? 1m : 0m;
                 }
             }
 
@@ -166,13 +220,23 @@ namespace QingYi.Core.Mathematics.Matrix
                 throw new ArgumentException("Matrix dimensions must be the same");
 
             var result = new Matrix<T>(_rows, _cols);
-            var resultSpan = result._data.Span;
-            var thisSpan = _data.Span;
-            var otherSpan = other._data.Span;
+            var resultData = result._data.Span;
+            var thisData = _data.Span;
+            var otherData = other._data.Span;
 
-            for (int i = 0; i < thisSpan.Length; i++)
+            // Use SIMD for non-decimal types if available
+            if (typeof(T) != typeof(decimal) && Avx2.IsSupported && thisData.Length >= 8)
             {
-                resultSpan[i] = thisSpan[i] + otherSpan[i];
+                // Use SIMD-optimized addition for non-decimal types
+                MatrixOperations.AddSimd(thisData, otherData, resultData, typeof(T));
+            }
+            else
+            {
+                // Use standard addition for decimal or when SIMD is not available
+                for (int i = 0; i < thisData.Length; i++)
+                {
+                    resultData[i] = thisData[i] + otherData[i];
+                }
             }
 
             return result;
@@ -190,28 +254,20 @@ namespace QingYi.Core.Mathematics.Matrix
 
             var result = new Matrix<T>(_rows, other._cols);
 
-            // Use SIMD-optimized matrix multiplication
-            Parallel.For(0, _rows, i =>
+            // Use optimized multiplication based on type
+            if (typeof(T) == typeof(double) && Avx2.IsSupported)
             {
-                var resultRow = new T[other._cols];
-                for (int k = 0; k < _cols; k++)
-                {
-                    T value = this[i, k];
-                    if (value != T.Zero)
-                    {
-                        for (int j = 0; j < other._cols; j++)
-                        {
-                            resultRow[j] += value * other[k, j];
-                        }
-                    }
-                }
-
-                // Copy the computed row to the result matrix
-                for (int j = 0; j < other._cols; j++)
-                {
-                    result[i, j] = resultRow[j];
-                }
-            });
+                MatrixOperations.MultiplyDoubleSimd(this, other, result);
+            }
+            else if (typeof(T) == typeof(float) && Avx2.IsSupported)
+            {
+                MatrixOperations.MultiplyFloatSimd(this, other, result);
+            }
+            else
+            {
+                // Use standard multiplication for decimal or when SIMD is not available
+                MatrixOperations.MultiplyStandard(this, other, result);
+            }
 
             return result;
         }
@@ -223,14 +279,28 @@ namespace QingYi.Core.Mathematics.Matrix
         public Matrix<T> Transpose()
         {
             var result = new Matrix<T>(_cols, _rows);
-            var resultSpan = result._data.Span;
-            var thisSpan = _data.Span;
+            var resultData = result._data.Span;
+            var thisData = _data.Span;
 
-            for (int i = 0; i < _rows; i++)
+            // Use parallel transposition for large matrices
+            if (_rows * _cols > 10000)
             {
-                for (int j = 0; j < _cols; j++)
+                Parallel.For(0, _rows, i =>
                 {
-                    resultSpan[j * _rows + i] = thisSpan[i * _cols + j];
+                    for (int j = 0; j < _cols; j++)
+                    {
+                        resultData[j * _rows + i] = thisData[i * _cols + j];
+                    }
+                });
+            }
+            else
+            {
+                for (int i = 0; i < _rows; i++)
+                {
+                    for (int j = 0; j < _cols; j++)
+                    {
+                        resultData[j * _rows + i] = thisData[i * _cols + j];
+                    }
                 }
             }
 
@@ -244,6 +314,26 @@ namespace QingYi.Core.Mathematics.Matrix
         public T[,] ToArray()
         {
             var array = new T[_rows, _cols];
+            var span = _data.Span;
+
+            for (int i = 0; i < _rows; i++)
+            {
+                for (int j = 0; j < _cols; j++)
+                {
+                    array[i, j] = (T)Convert.ChangeType(span[i * _cols + j], typeof(T));
+                }
+            }
+
+            return array;
+        }
+
+        /// <summary>
+        /// Convert to a 2D decimal array
+        /// </summary>
+        /// <returns>2D decimal array</returns>
+        public decimal[,] ToDecimalArray()
+        {
+            var array = new decimal[_rows, _cols];
             var span = _data.Span;
 
             for (int i = 0; i < _rows; i++)
@@ -308,7 +398,7 @@ namespace QingYi.Core.Mathematics.Matrix
         /// Import matrix from CSV
         /// </summary>
         /// <param name="path">File path</param>
-        /// <param name="delimiter">Delimiter</param>
+        /// <param name="delimter">Delimiter</param>
         /// <returns>Matrix object</returns>
         public static Matrix<T> ImportFromCsv(string path, string delimiter = ",")
         {
@@ -329,9 +419,9 @@ namespace QingYi.Core.Mathematics.Matrix
 
                 for (int j = 0; j < cols; j++)
                 {
-                    if (T.TryParse(values[j], null, out T result))
+                    if (decimal.TryParse(values[j], out decimal result))
                     {
-                        matrix[i, j] = result;
+                        matrix.SetDecimal(i, j, result);
                     }
                     else
                     {
@@ -354,7 +444,7 @@ namespace QingYi.Core.Mathematics.Matrix
                 WriteIndented = true
             };
 
-            return JsonSerializer.Serialize(new MatrixJsonData<T>
+            return JsonSerializer.Serialize(new MatrixJsonData
             {
                 Rows = _rows,
                 Cols = _cols,
@@ -369,12 +459,12 @@ namespace QingYi.Core.Mathematics.Matrix
         /// <returns>Matrix object</returns>
         public static Matrix<T> FromJson(string json)
         {
-            var data = JsonSerializer.Deserialize<MatrixJsonData<T>>(json);
+            var data = JsonSerializer.Deserialize<MatrixJsonData>(json);
 
             if (data.Rows <= 0 || data.Cols <= 0 || data.Data == null || data.Data.Length != data.Rows * data.Cols)
                 throw new JsonException("Invalid matrix data");
 
-            var memory = new Memory<T>(data.Data);
+            var memory = new Memory<decimal>(data.Data);
             return new Matrix<T>(memory, data.Rows, data.Cols, false);
         }
 
@@ -382,7 +472,7 @@ namespace QingYi.Core.Mathematics.Matrix
         /// Convert matrix to flat array
         /// </summary>
         /// <returns>Flat array representation</returns>
-        internal T[] ToFlatArray()
+        internal decimal[] ToFlatArray()
         {
             return _data.ToArray();
         }
@@ -407,9 +497,9 @@ namespace QingYi.Core.Mathematics.Matrix
         /// <returns>Matrix object</returns>
         public static Matrix<T> CreatePooled(int rows, int cols)
         {
-            // Actual implementation should use ArrayPool<T>.Shared.Rent
+            // Actual implementation should use ArrayPool<decimal>.Shared.Rent
             // Simplified here
-            var memory = new Memory<T>(new T[rows * cols]);
+            var memory = new Memory<decimal>(new decimal[rows * cols]);
             return new Matrix<T>(memory, rows, cols, true);
         }
     }
