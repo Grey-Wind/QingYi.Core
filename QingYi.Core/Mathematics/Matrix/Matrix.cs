@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Numerics;
-using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.Json;
@@ -279,8 +278,6 @@ namespace QingYi.Core.Mathematics.Matrix
         public Matrix<T> Transpose()
         {
             var result = new Matrix<T>(_cols, _rows);
-            var resultData = result._data.Span;
-            var thisData = _data.Span;
 
             // Use parallel transposition for large matrices
             if (_rows * _cols > 10000)
@@ -289,7 +286,7 @@ namespace QingYi.Core.Mathematics.Matrix
                 {
                     for (int j = 0; j < _cols; j++)
                     {
-                        resultData[j * _rows + i] = thisData[i * _cols + j];
+                        result.SetDecimal(j, i, GetDecimal(i, j));
                     }
                 });
             }
@@ -299,7 +296,7 @@ namespace QingYi.Core.Mathematics.Matrix
                 {
                     for (int j = 0; j < _cols; j++)
                     {
-                        resultData[j * _rows + i] = thisData[i * _cols + j];
+                        result.SetDecimal(j, i, GetDecimal(i, j));
                     }
                 }
             }
@@ -398,7 +395,7 @@ namespace QingYi.Core.Mathematics.Matrix
         /// Import matrix from CSV
         /// </summary>
         /// <param name="path">File path</param>
-        /// <param name="delimter">Delimiter</param>
+        /// <param name="delimiter">Delimiter</param>
         /// <returns>Matrix object</returns>
         public static Matrix<T> ImportFromCsv(string path, string delimiter = ",")
         {

@@ -49,7 +49,7 @@ namespace QingYi.Core.Mathematics.Matrix
         /// <typeparam name="T">Numeric type</typeparam>
         /// <param name="matrix">Matrix</param>
         /// <returns>Inverse matrix</returns>
-        public static Matrix<double> Inverse<T>(this Matrix<T> matrix) where T : unmanaged, INumber<T>
+        public static Matrix<T> Inverse<T>(this Matrix<T> matrix) where T : unmanaged, INumber<T>
         {
             if (matrix.Rows != matrix.Cols)
                 throw new InvalidOperationException("Only square matrices can be inverted");
@@ -58,7 +58,7 @@ namespace QingYi.Core.Mathematics.Matrix
             // Note: This is a simplified implementation, production should use more stable algorithms
             int n = matrix.Rows;
             var augmented = new decimal[n, 2 * n];
-            var result = new Matrix<double>(n, n);
+            var result = new Matrix<T>(n, n);
 
             // Create augmented matrix [A|I]
             for (int i = 0; i < n; i++)
