@@ -11,21 +11,49 @@ using System.Threading.Tasks;
 
 namespace QingYi.Core.Crypto
 {
+    /// <summary>
+    /// Provides Advanced Encryption Standard (AES) cryptographic operations with support for multiple cipher modes.
+    /// This class implements the ICrypto interface and offers encryption and decryption functionality using AES algorithm.
+    /// It supports standard modes like CBC, ECB, CFB, OFB, CTS, and authenticated encryption with GCM mode.
+    /// The class provides both synchronous and asynchronous operations for various data types including byte arrays,
+    /// streams, and strings. It implements IDisposable to ensure proper cleanup of cryptographic resources.
+    /// </summary>
     public sealed class AesCrypto : ICrypto
     {
 #nullable enable
         #region 常量定义
 
+        /// <summary>
+        /// Represents the AES block size in bytes (128 bits). AES operates on 16-byte blocks regardless of key size.
+        /// </summary>
         private const int AES_BLOCK_SIZE = 16;
+
+        /// <summary>
+        /// Represents the AES Initialization Vector (IV) size in bytes (128 bits).
+        /// The IV must be unique for each encryption operation when using modes that require it.
+        /// </summary>
         private const int AES_IV_SIZE = 16;
+
+        /// <summary>
+        /// Represents the default authentication tag size in bytes (128 bits) for GCM mode.
+        /// This tag is used for verifying the integrity and authenticity of encrypted data.
+        /// </summary>
         private const int DEFAULT_TAG_SIZE = 16;
 
+        /// <summary>
+        /// A pre-allocated empty byte array used as a default value for optional byte array parameters.
+        /// This helps reduce allocations by avoiding creation of new empty arrays.
+        /// </summary>
         private static readonly byte[] EmptyByteArray = [];
 
         #endregion
 
         #region 自定义枚举和辅助类
 
+        /// <summary>
+        /// Extended enumeration of cipher modes supported by the AesCrypto class.
+        /// Includes standard cipher modes as well as GCM (Galois/Counter Mode) for authenticated encryption.
+        /// </summary>
         public enum ExtendedCipherMode
         {
             /// <summary>
@@ -58,25 +86,81 @@ namespace QingYi.Core.Crypto
 
         #region 字段
 
+        /// <summary>
+        /// The underlying AES cryptographic provider used for non-GCM encryption operations.
+        /// This field is initialized in the constructor and disposed when this instance is disposed.
+        /// </summary>
         private readonly Aes _aes;
+
+        /// <summary>
+        /// The AES-GCM cryptographic provider used for authenticated encryption operations.
+        /// This field is only initialized when GCM mode is selected and is disposed when this instance is disposed.
+        /// </summary>
         private readonly AesGcm? _aesGcm;
+
+        /// <summary>
+        /// The cryptographic key used for encryption and decryption operations.
+        /// The key length determines the AES variant: 16 bytes for AES-128, 24 bytes for AES-192, or 32 bytes for AES-256.
+        /// This array is a copy of the provided key to prevent external modifications.
+        /// </summary>
         private byte[] _key;
+
+        /// <summary>
+        /// Indicates whether this instance is configured for GCM (Galois/Counter Mode) operation.
+        /// GCM provides authenticated encryption, which ensures both confidentiality and integrity of the encrypted data.
+        /// </summary>
         private bool _isGcmMode;
+
+        /// <summary>
+        /// Tracks whether this instance has been disposed to prevent use after disposal.
+        /// Once disposed, all operations on this instance will throw ObjectDisposedException.
+        /// </summary>
         private bool _disposed;
+
+        /// <summary>
+        /// Stores the extended cipher mode configured for this instance.
+        /// This determines the mode of operation for the AES algorithm.
+        /// </summary>
         private ExtendedCipherMode _extendedMode;
 
         #endregion
 
         #region 属性
 
+        /// <summary>
+        /// Gets a string representation of the cryptographic algorithm and mode being used.
+        /// The format is "AES-GCM" for GCM mode or "AES-{KeySize}-{Mode}" for other modes.
+        /// </summary>
+        /// <value>A string describing the algorithm and mode.</value>
         public string AlgorithmName => _isGcmMode ? "AES-GCM" : $"AES-{KeySize}-{_extendedMode}";
 
+        /// <summary>
+        /// Gets the size of the cryptographic key in bits.
+        /// Valid sizes are 128, 192, or 256 bits, corresponding to key lengths of 16, 24, or 32 bytes.
+        /// </summary>
+        /// <value>The key size in bits.</value>
         public int KeySize => _key.Length * 8;
 
+        /// <summary>
+        /// Gets the cryptographic key as a read-only memory region.
+        /// This provides a safe way to access the key without allowing modifications.
+        /// </summary>
+        /// <value>A read-only memory region containing the cryptographic key.</value>
         public ReadOnlyMemory<byte> Key => _key;
 
+        /// <summary>
+        /// Gets a value indicating whether the current mode provides authenticated encryption.
+        /// Returns true only for GCM mode, which provides both confidentiality and integrity protection.
+        /// </summary>
+        /// <value>True if authenticated encryption is enabled (GCM mode); otherwise, false.</value>
         public bool IsAuthenticatedEncryption => _isGcmMode;
 
+        /// <summary>
+        /// Gets the standard CipherMode being used for encryption and decryption operations.
+        /// This property maps the ExtendedCipherMode to the standard System.Security.Cryptography.CipherMode enumeration.
+        /// For GCM mode, this returns CipherMode.CBC as a placeholder since GCM is not part of the standard enumeration.
+        /// </summary>
+        /// <value>The standard CipherMode being used.</value>
         public CipherMode Mode
         {
             get
@@ -95,10 +179,26 @@ namespace QingYi.Core.Crypto
             }
         }
 
+        /// <summary>
+        /// Gets the padding mode being used for encryption and decryption operations.
+        /// Padding is applied to ensure the plaintext length is a multiple of the block size.
+        /// </summary>
+        /// <value>The PaddingMode being used.</value>
         public PaddingMode Padding => _aes.Padding;
 
+        /// <summary>
+        /// Gets the block size of the AES algorithm in bytes.
+        /// AES always uses a block size of 16 bytes (128 bits), regardless of the key size.
+        /// </summary>
+        /// <value>The block size in bytes.</value>
         public int BlockSize => AES_BLOCK_SIZE;
 
+        /// <summary>
+        /// Gets the size of the authentication tag in bytes for authenticated encryption modes.
+        /// Returns 16 bytes for GCM mode, or 0 for non-authenticated modes.
+        /// The authentication tag is used to verify the integrity and authenticity of the encrypted data.
+        /// </summary>
+        /// <value>The authentication tag size in bytes.</value>
         public int TagSizeInBytes => _isGcmMode ? DEFAULT_TAG_SIZE : 0;
 
         #endregion
@@ -106,11 +206,14 @@ namespace QingYi.Core.Crypto
         #region 构造函数和工厂方法
 
         /// <summary>
-        /// 创建AES加密器实例
+        /// Initializes a new instance of the AesCrypto class with the specified key, cipher mode, and padding mode.
+        /// The key is copied internally to prevent external modifications. The key must be 16, 24, or 32 bytes in length.
         /// </summary>
-        /// <param name="key">密钥</param>
-        /// <param name="mode">加密模式</param>
-        /// <param name="padding">填充模式</param>
+        /// <param name="key">The cryptographic key to use for encryption and decryption. Must be 16, 24, or 32 bytes.</param>
+        /// <param name="mode">The cipher mode to use for encryption and decryption. Defaults to CBC.</param>
+        /// <param name="padding">The padding mode to use. Defaults to PKCS7. Must be None for GCM mode.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the key is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the key length is invalid or when incompatible mode and padding are specified.</exception>
         public AesCrypto(byte[] key, ExtendedCipherMode mode = ExtendedCipherMode.CBC, PaddingMode padding = PaddingMode.PKCS7)
         {
             ValidateKey(key);
@@ -139,18 +242,48 @@ namespace QingYi.Core.Crypto
             }
         }
 
+        /// <summary>
+        /// Creates a new instance of the AesCrypto class from a Base64-encoded key.
+        /// This method is useful when the key is stored or transmitted as a Base64 string.
+        /// </summary>
+        /// <param name="base64Key">A Base64-encoded string representing the cryptographic key.</param>
+        /// <param name="mode">The cipher mode to use for encryption and decryption. Defaults to CBC.</param>
+        /// <param name="padding">The padding mode to use. Defaults to PKCS7. Must be None for GCM mode.</param>
+        /// <returns>A new instance of the AesCrypto class initialized with the decoded key.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when base64Key is null.</exception>
+        /// <exception cref="FormatException">Thrown when base64Key is not a valid Base64 string.</exception>
+        /// <exception cref="ArgumentException">Thrown when the decoded key length is invalid or when incompatible mode and padding are specified.</exception>
         public static AesCrypto CreateFromBase64Key(string base64Key, ExtendedCipherMode mode = ExtendedCipherMode.CBC, PaddingMode padding = PaddingMode.PKCS7)
         {
             byte[] key = Convert.FromBase64String(base64Key);
             return new AesCrypto(key, mode, padding);
         }
 
+        /// <summary>
+        /// Creates a new instance of the AesCrypto class from a hexadecimal-encoded key.
+        /// This method is useful when the key is stored or transmitted as a hexadecimal string.
+        /// </summary>
+        /// <param name="hexKey">A hexadecimal-encoded string representing the cryptographic key.</param>
+        /// <param name="mode">The cipher mode to use for encryption and decryption. Defaults to CBC.</param>
+        /// <param name="padding">The padding mode to use. Defaults to PKCS7. Must be None for GCM mode.</param>
+        /// <returns>A new instance of the AesCrypto class initialized with the decoded key.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when hexKey is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when hexKey is not a valid hexadecimal string or when the decoded key length is invalid, or when incompatible mode and padding are specified.</exception>
         public static AesCrypto CreateFromHexKey(string hexKey, ExtendedCipherMode mode = ExtendedCipherMode.CBC, PaddingMode padding = PaddingMode.PKCS7)
         {
             byte[] key = HexStringToBytes(hexKey);
             return new AesCrypto(key, mode, padding);
         }
 
+        /// <summary>
+        /// Creates a new instance of the AesCrypto class with a randomly generated cryptographic key.
+        /// This method is recommended for generating new keys for cryptographic operations.
+        /// </summary>
+        /// <param name="keySize">The size of the key to generate in bits. Must be 128, 192, or 256. Defaults to 256.</param>
+        /// <param name="mode">The cipher mode to use for encryption and decryption. Defaults to CBC.</param>
+        /// <param name="padding">The padding mode to use. Defaults to PKCS7. Must be None for GCM mode.</param>
+        /// <returns>A new instance of the AesCrypto class initialized with a randomly generated key.</returns>
+        /// <exception cref="ArgumentException">Thrown when keySize is not 128, 192, or 256, or when incompatible mode and padding are specified.</exception>
         public static AesCrypto CreateRandom(int keySize = 256, ExtendedCipherMode mode = ExtendedCipherMode.CBC, PaddingMode padding = PaddingMode.PKCS7)
         {
             byte[] key = new byte[keySize / 8];
@@ -162,6 +295,17 @@ namespace QingYi.Core.Crypto
 
         #region 核心加解密方法
 
+        /// <summary>
+        /// Encrypts the specified plaintext data using the configured cipher mode and key.
+        /// For GCM mode, the method also generates an authentication tag for integrity verification.
+        /// </summary>
+        /// <param name="plaintext">The plaintext data to encrypt.</param>
+        /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data to authenticate in GCM mode. Ignored for non-GCM modes.</param>
+        /// <returns>The encrypted ciphertext data. For GCM mode, the authentication tag is not included in this result.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when plaintext or iv is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when iv is not 16 bytes in length.</exception>
         public byte[] Encrypt(byte[] plaintext, byte[] iv, byte[]? associatedData = null)
         {
             ThrowIfDisposed();
@@ -177,6 +321,20 @@ namespace QingYi.Core.Crypto
             }
         }
 
+        /// <summary>
+        /// Decrypts the specified ciphertext data using the configured cipher mode and key.
+        /// For GCM mode, the method also verifies the authentication tag for integrity.
+        /// </summary>
+        /// <param name="ciphertext">The ciphertext data to decrypt.</param>
+        /// <param name="iv">The initialization vector (IV) used for encryption. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data that was authenticated in GCM mode. Ignored for non-GCM modes.</param>
+        /// <param name="authenticationTag">The authentication tag for integrity verification in GCM mode. Required for GCM, ignored for non-GCM modes.</param>
+        /// <returns>The decrypted plaintext data.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when ciphertext or iv is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when iv is not 16 bytes, or when authentication tag is not provided for GCM mode.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when authentication tag is provided for non-GCM modes.</exception>
+        /// <exception cref="CryptographicException">Thrown when the authentication tag verification fails in GCM mode.</exception>
         public byte[] Decrypt(byte[] ciphertext, byte[] iv, byte[]? associatedData = null, byte[]? authenticationTag = null)
         {
             ThrowIfDisposed();
@@ -198,6 +356,18 @@ namespace QingYi.Core.Crypto
             }
         }
 
+        /// <summary>
+        /// Encrypts the specified plaintext data using the configured cipher mode and key.
+        /// This method uses spans to avoid additional memory allocations.
+        /// For GCM mode, the method also generates an authentication tag for integrity verification.
+        /// </summary>
+        /// <param name="plaintext">The plaintext data to encrypt.</param>
+        /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 16 bytes.</param>
+        /// <param name="destination">The span to write the encrypted ciphertext to.</param>
+        /// <param name="bytesWritten">When this method returns, contains the number of bytes written to destination.</param>
+        /// <param name="associatedData">Optional additional data to authenticate in GCM mode. Ignored for non-GCM modes.</param>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentException">Thrown when iv is not 16 bytes, or when destination is too small.</exception>
         public void Encrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> iv, Span<byte> destination, out int bytesWritten, ReadOnlySpan<byte> associatedData = default)
         {
             ThrowIfDisposed();
@@ -213,6 +383,21 @@ namespace QingYi.Core.Crypto
             }
         }
 
+        /// <summary>
+        /// Decrypts the specified ciphertext data using the configured cipher mode and key.
+        /// This method uses spans to avoid additional memory allocations.
+        /// For GCM mode, the method also verifies the authentication tag for integrity.
+        /// </summary>
+        /// <param name="ciphertext">The ciphertext data to decrypt.</param>
+        /// <param name="iv">The initialization vector (IV) used for encryption. Must be 16 bytes.</param>
+        /// <param name="destination">The span to write the decrypted plaintext to.</param>
+        /// <param name="bytesWritten">When this method returns, contains the number of bytes written to destination.</param>
+        /// <param name="associatedData">Optional additional data that was authenticated in GCM mode. Ignored for non-GCM modes.</param>
+        /// <param name="authenticationTag">The authentication tag for integrity verification in GCM mode. Required for GCM, ignored for non-GCM modes.</param>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentException">Thrown when iv is not 16 bytes, when destination is too small, or when authentication tag is not provided for GCM mode.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when authentication tag is provided for non-GCM modes.</exception>
+        /// <exception cref="CryptographicException">Thrown when the authentication tag verification fails in GCM mode.</exception>
         public void Decrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> iv, Span<byte> destination, out int bytesWritten, ReadOnlySpan<byte> associatedData = default, ReadOnlySpan<byte> authenticationTag = default)
         {
             ThrowIfDisposed();
@@ -238,6 +423,15 @@ namespace QingYi.Core.Crypto
 
         #region GCM模式加解密实现
 
+        /// <summary>
+        /// Encrypts the specified plaintext data using AES-GCM mode.
+        /// This method generates an authentication tag for integrity verification.
+        /// </summary>
+        /// <param name="plaintext">The plaintext data to encrypt.</param>
+        /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 12 bytes for GCM.</param>
+        /// <param name="associatedData">Optional additional data to authenticate. This data is not encrypted but is included in the authentication tag calculation.</param>
+        /// <returns>The encrypted ciphertext data. The authentication tag is not included in this result.</returns>
+        /// <exception cref="CryptographicException">Thrown when the encryption operation fails.</exception>
         private byte[] EncryptGcm(byte[] plaintext, byte[] iv, byte[]? associatedData)
         {
             byte[] ciphertext = new byte[plaintext.Length];
@@ -255,6 +449,16 @@ namespace QingYi.Core.Crypto
             return ciphertext;
         }
 
+        /// <summary>
+        /// Encrypts the specified plaintext data using AES-GCM mode with spans to avoid additional memory allocations.
+        /// This method generates an authentication tag for integrity verification.
+        /// </summary>
+        /// <param name="plaintext">The plaintext data to encrypt.</param>
+        /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 12 bytes for GCM.</param>
+        /// <param name="destination">The span to write the encrypted ciphertext to.</param>
+        /// <param name="bytesWritten">When this method returns, contains the number of bytes written to destination.</param>
+        /// <param name="associatedData">Optional additional data to authenticate. This data is not encrypted but is included in the authentication tag calculation.</param>
+        /// <exception cref="CryptographicException">Thrown when the encryption operation fails.</exception>
         private void EncryptGcm(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> iv, Span<byte> destination, out int bytesWritten, ReadOnlySpan<byte> associatedData)
         {
             bytesWritten = plaintext.Length;
@@ -270,6 +474,16 @@ namespace QingYi.Core.Crypto
             }
         }
 
+        /// <summary>
+        /// Decrypts the specified ciphertext data using AES-GCM mode.
+        /// This method verifies the authentication tag for integrity before returning the plaintext.
+        /// </summary>
+        /// <param name="ciphertext">The ciphertext data to decrypt.</param>
+        /// <param name="iv">The initialization vector (IV) used for encryption. Must be 12 bytes for GCM.</param>
+        /// <param name="tag">The authentication tag for integrity verification. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data that was authenticated during encryption. This data is not encrypted but is included in the authentication tag calculation.</param>
+        /// <returns>The decrypted plaintext data.</returns>
+        /// <exception cref="CryptographicException">Thrown when the authentication tag verification fails or when the decryption operation fails.</exception>
         private byte[] DecryptGcm(byte[] ciphertext, byte[] iv, byte[] tag, byte[]? associatedData)
         {
             byte[] plaintext = new byte[ciphertext.Length];
@@ -286,6 +500,17 @@ namespace QingYi.Core.Crypto
             return plaintext;
         }
 
+        /// <summary>
+        /// Decrypts the specified ciphertext data using AES-GCM mode with spans to avoid additional memory allocations.
+        /// This method verifies the authentication tag for integrity before returning the plaintext.
+        /// </summary>
+        /// <param name="ciphertext">The ciphertext data to decrypt.</param>
+        /// <param name="iv">The initialization vector (IV) used for encryption. Must be 12 bytes for GCM.</param>
+        /// <param name="destination">The span to write the decrypted plaintext to.</param>
+        /// <param name="bytesWritten">When this method returns, contains the number of bytes written to destination.</param>
+        /// <param name="tag">The authentication tag for integrity verification. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data that was authenticated during encryption. This data is not encrypted but is included in the authentication tag calculation.</param>
+        /// <exception cref="CryptographicException">Thrown when the authentication tag verification fails or when the decryption operation fails.</exception>
         private void DecryptGcm(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> iv, Span<byte> destination, out int bytesWritten, ReadOnlySpan<byte> tag, ReadOnlySpan<byte> associatedData)
         {
             bytesWritten = ciphertext.Length;
@@ -304,12 +529,27 @@ namespace QingYi.Core.Crypto
 
         #region 非GCM模式加解密实现
 
+        /// <summary>
+        /// Encrypts the specified plaintext data using a non-GCM cipher mode (CBC, ECB, CFB, OFB, or CTS).
+        /// </summary>
+        /// <param name="plaintext">The plaintext data to encrypt.</param>
+        /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 16 bytes.</param>
+        /// <returns>The encrypted ciphertext data.</returns>
+        /// <exception cref="CryptographicException">Thrown when the encryption operation fails.</exception>
         private byte[] EncryptNonGcm(byte[] plaintext, byte[] iv)
         {
             using var encryptor = _aes.CreateEncryptor(_key, iv);
             return encryptor.TransformFinalBlock(plaintext, 0, plaintext.Length);
         }
 
+        /// <summary>
+        /// Encrypts the specified plaintext data using a non-GCM cipher mode (CBC, ECB, CFB, OFB, or CTS) with spans to avoid additional memory allocations.
+        /// </summary>
+        /// <param name="plaintext">The plaintext data to encrypt.</param>
+        /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 16 bytes.</param>
+        /// <param name="destination">The span to write the encrypted ciphertext to.</param>
+        /// <param name="bytesWritten">When this method returns, contains the number of bytes written to destination.</param>
+        /// <exception cref="CryptographicException">Thrown when the encryption operation fails.</exception>
         private void EncryptNonGcm(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> iv, Span<byte> destination, out int bytesWritten)
         {
             using var encryptor = _aes.CreateEncryptor(_key, iv.ToArray());
@@ -337,12 +577,27 @@ namespace QingYi.Core.Crypto
             bytesWritten += finalBlock.Length;
         }
 
+        /// <summary>
+        /// Decrypts the specified ciphertext data using a non-GCM cipher mode (CBC, ECB, CFB, OFB, or CTS).
+        /// </summary>
+        /// <param name="ciphertext">The ciphertext data to decrypt.</param>
+        /// <param name="iv">The initialization vector (IV) used for encryption. Must be 16 bytes.</param>
+        /// <returns>The decrypted plaintext data.</returns>
+        /// <exception cref="CryptographicException">Thrown when the decryption operation fails.</exception>
         private byte[] DecryptNonGcm(byte[] ciphertext, byte[] iv)
         {
             using var decryptor = _aes.CreateDecryptor(_key, iv);
             return decryptor.TransformFinalBlock(ciphertext, 0, ciphertext.Length);
         }
 
+        /// <summary>
+        /// Decrypts the specified ciphertext data using a non-GCM cipher mode (CBC, ECB, CFB, OFB, or CTS) with spans to avoid additional memory allocations.
+        /// </summary>
+        /// <param name="ciphertext">The ciphertext data to decrypt.</param>
+        /// <param name="iv">The initialization vector (IV) used for encryption. Must be 16 bytes.</param>
+        /// <param name="destination">The span to write the decrypted plaintext to.</param>
+        /// <param name="bytesWritten">When this method returns, contains the number of bytes written to destination.</param>
+        /// <exception cref="CryptographicException">Thrown when the decryption operation fails.</exception>
         private void DecryptNonGcm(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> iv, Span<byte> destination, out int bytesWritten)
         {
             using var decryptor = _aes.CreateDecryptor(_key, iv.ToArray());
@@ -374,6 +629,17 @@ namespace QingYi.Core.Crypto
 
         #region 字符串便捷方法
 
+        /// <summary>
+        /// Encrypts a UTF-8 encoded string and returns the result as a Base64-encoded string.
+        /// This method is a convenient way to encrypt text data for storage or transmission.
+        /// </summary>
+        /// <param name="plaintext">The plaintext string to encrypt.</param>
+        /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data to authenticate in GCM mode. Ignored for non-GCM modes.</param>
+        /// <returns>A Base64-encoded string representing the encrypted ciphertext.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when plaintext or iv is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when iv is not 16 bytes in length.</exception>
         public string EncryptToBase64(string plaintext, byte[] iv, byte[]? associatedData = null)
         {
             byte[] plaintextBytes = Encoding.UTF8.GetBytes(plaintext);
@@ -381,6 +647,17 @@ namespace QingYi.Core.Crypto
             return Convert.ToBase64String(ciphertext);
         }
 
+        /// <summary>
+        /// Encrypts a UTF-8 encoded string and returns the result as a hexadecimal-encoded string.
+        /// This method is a convenient way to encrypt text data for storage or transmission.
+        /// </summary>
+        /// <param name="plaintext">The plaintext string to encrypt.</param>
+        /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data to authenticate in GCM mode. Ignored for non-GCM modes.</param>
+        /// <returns>A hexadecimal-encoded string representing the encrypted ciphertext.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when plaintext or iv is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when iv is not 16 bytes in length.</exception>
         public string EncryptToHex(string plaintext, byte[] iv, byte[]? associatedData = null)
         {
             byte[] plaintextBytes = Encoding.UTF8.GetBytes(plaintext);
@@ -388,6 +665,20 @@ namespace QingYi.Core.Crypto
             return BytesToHexString(ciphertext);
         }
 
+        /// <summary>
+        /// Decrypts a Base64-encoded ciphertext string and returns the result as a UTF-8 encoded string.
+        /// This method is a convenient way to decrypt text data that was stored or transmitted as Base64.
+        /// </summary>
+        /// <param name="base64Ciphertext">The Base64-encoded ciphertext string to decrypt.</param>
+        /// <param name="iv">The initialization vector (IV) used for encryption. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data that was authenticated in GCM mode. Ignored for non-GCM modes.</param>
+        /// <param name="tagBase64">The authentication tag for integrity verification in GCM mode. Required for GCM, ignored for non-GCM modes.</param>
+        /// <returns>The decrypted plaintext as a UTF-8 encoded string.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when base64Ciphertext or iv is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when iv is not 16 bytes, or when authentication tag is not provided for GCM mode.</exception>
+        /// <exception cref="FormatException">Thrown when base64Ciphertext or tagBase64 is not a valid Base64 string.</exception>
+        /// <exception cref="CryptographicException">Thrown when the authentication tag verification fails in GCM mode.</exception>
         public string DecryptFromBase64(string base64Ciphertext, byte[] iv, byte[]? associatedData = null, byte[]? tagBase64 = null)
         {
             byte[] ciphertext = Convert.FromBase64String(base64Ciphertext);
@@ -396,6 +687,19 @@ namespace QingYi.Core.Crypto
             return Encoding.UTF8.GetString(plaintext);
         }
 
+        /// <summary>
+        /// Decrypts a hexadecimal-encoded ciphertext string and returns the result as a UTF-8 encoded string.
+        /// This method is a convenient way to decrypt text data that was stored or transmitted as hexadecimal.
+        /// </summary>
+        /// <param name="hexCiphertext">The hexadecimal-encoded ciphertext string to decrypt.</param>
+        /// <param name="iv">The initialization vector (IV) used for encryption. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data that was authenticated in GCM mode. Ignored for non-GCM modes.</param>
+        /// <param name="tagHex">The authentication tag for integrity verification in GCM mode, as a hexadecimal string. Required for GCM, ignored for non-GCM modes.</param>
+        /// <returns>The decrypted plaintext as a UTF-8 encoded string.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when hexCiphertext or iv is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when iv is not 16 bytes, when hexCiphertext or tagHex is not a valid hexadecimal string, or when authentication tag is not provided for GCM mode.</exception>
+        /// <exception cref="CryptographicException">Thrown when the authentication tag verification fails in GCM mode.</exception>
         public string DecryptFromHex(string hexCiphertext, byte[] iv, byte[]? associatedData = null, string? tagHex = null)
         {
             byte[] ciphertext = HexStringToBytes(hexCiphertext);
@@ -408,6 +712,15 @@ namespace QingYi.Core.Crypto
 
         #region 流处理方法
 
+        /// <summary>
+        /// Creates a symmetric encryptor object with the specified key and initialization vector (IV).
+        /// This method is not supported for GCM mode; use streaming methods instead.
+        /// </summary>
+        /// <param name="iv">The initialization vector (IV) for the symmetric algorithm. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data to authenticate in GCM mode. Ignored for non-GCM modes.</param>
+        /// <returns>A symmetric encryptor object.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="NotSupportedException">Thrown when this method is called in GCM mode.</exception>
         public ICryptoTransform CreateEncryptor(byte[] iv, byte[]? associatedData = null)
         {
             ThrowIfDisposed();
@@ -418,6 +731,17 @@ namespace QingYi.Core.Crypto
             return _aes.CreateEncryptor(_key, iv);
         }
 
+        /// <summary>
+        /// Creates a symmetric decryptor object with the specified key and initialization vector (IV).
+        /// This method is not supported for GCM mode; use streaming methods instead.
+        /// </summary>
+        /// <param name="iv">The initialization vector (IV) for the symmetric algorithm. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data that was authenticated in GCM mode. Ignored for non-GCM modes.</param>
+        /// <param name="authenticationTag">The authentication tag for integrity verification in GCM mode. Required for GCM, ignored for non-GCM modes.</param>
+        /// <returns>A symmetric decryptor object.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="NotSupportedException">Thrown when this method is called in GCM mode.</exception>
+        /// <exception cref="ArgumentException">Thrown when authentication tag is provided for non-GCM modes.</exception>
         public ICryptoTransform CreateDecryptor(byte[] iv, byte[]? associatedData = null, byte[]? authenticationTag = null)
         {
             ThrowIfDisposed();
@@ -431,6 +755,19 @@ namespace QingYi.Core.Crypto
             return _aes.CreateDecryptor(_key, iv);
         }
 
+        /// <summary>
+        /// Asynchronously encrypts data from the input stream and writes the encrypted data to the output stream.
+        /// For GCM mode, the entire input stream is read into memory before encryption.
+        /// </summary>
+        /// <param name="plaintextStream">The stream containing the plaintext data to encrypt.</param>
+        /// <param name="ciphertextStream">The stream to write the encrypted ciphertext to.</param>
+        /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data to authenticate in GCM mode. Ignored for non-GCM modes.</param>
+        /// <param name="progress">Optional progress reporter for tracking encryption progress.</param>
+        /// <param name="ct">A cancellation token to cancel the operation.</param>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when plaintextStream, ciphertextStream, or iv is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when iv is not 16 bytes in length.</exception>
         public async Task EncryptAsync(Stream plaintextStream, Stream ciphertextStream, byte[] iv,
             byte[]? associatedData = null, IProgress<long>? progress = null, CancellationToken ct = default)
         {
@@ -448,6 +785,21 @@ namespace QingYi.Core.Crypto
             }
         }
 
+        /// <summary>
+        /// Asynchronously decrypts data from the input stream and writes the decrypted data to the output stream.
+        /// For GCM mode, the entire input stream is read into memory before decryption.
+        /// </summary>
+        /// <param name="ciphertextStream">The stream containing the ciphertext data to decrypt.</param>
+        /// <param name="plaintextStream">The stream to write the decrypted plaintext to.</param>
+        /// <param name="iv">The initialization vector (IV) used for encryption. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data that was authenticated in GCM mode. Ignored for non-GCM modes.</param>
+        /// <param name="authenticationTag">The authentication tag for integrity verification in GCM mode. Required for GCM, ignored for non-GCM modes.</param>
+        /// <param name="progress">Optional progress reporter for tracking decryption progress.</param>
+        /// <param name="ct">A cancellation token to cancel the operation.</param>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when ciphertextStream, plaintextStream, or iv is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when iv is not 16 bytes, or when authentication tag is not provided for GCM mode.</exception>
+        /// <exception cref="CryptographicException">Thrown when the authentication tag verification fails in GCM mode.</exception>
         public async Task DecryptAsync(Stream ciphertextStream, Stream plaintextStream, byte[] iv,
             byte[]? associatedData = null, byte[]? authenticationTag = null,
             IProgress<long>? progress = null, CancellationToken ct = default)
@@ -468,7 +820,16 @@ namespace QingYi.Core.Crypto
             }
         }
 
-        // 处理非GCM模式的异步加密
+        /// <summary>
+        /// Asynchronously encrypts data from the input stream and writes the encrypted data to the output stream using non-GCM cipher modes.
+        /// This method processes data in chunks to support large files without loading the entire file into memory.
+        /// </summary>
+        /// <param name="input">The stream containing the plaintext data to encrypt.</param>
+        /// <param name="output">The stream to write the encrypted ciphertext to.</param>
+        /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 16 bytes.</param>
+        /// <param name="progress">Optional progress reporter for tracking encryption progress.</param>
+        /// <param name="ct">A cancellation token to cancel the operation.</param>
+        /// <exception cref="CryptographicException">Thrown when the encryption operation fails.</exception>
         private async Task ProcessNonGcmEncryptionAsync(Stream input, Stream output, byte[] iv,
             IProgress<long>? progress, CancellationToken ct)
         {
@@ -521,7 +882,18 @@ namespace QingYi.Core.Crypto
             }
         }
 
-        // 处理GCM模式的异步加密
+        /// <summary>
+        /// Asynchronously encrypts data from the input stream and writes the encrypted data to the output stream using GCM mode.
+        /// Note that GCM mode does not support true streaming encryption, so the entire input stream is read into memory before encryption.
+        /// This method is not recommended for very large files due to memory constraints.
+        /// </summary>
+        /// <param name="input">The stream containing the plaintext data to encrypt.</param>
+        /// <param name="output">The stream to write the encrypted ciphertext to.</param>
+        /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 12 bytes for GCM.</param>
+        /// <param name="associatedData">Optional additional data to authenticate. This data is not encrypted but is included in the authentication tag calculation.</param>
+        /// <param name="progress">Optional progress reporter for tracking encryption progress.</param>
+        /// <param name="ct">A cancellation token to cancel the operation.</param>
+        /// <exception cref="CryptographicException">Thrown when the encryption operation fails.</exception>
         private async Task ProcessGcmEncryptionAsync(Stream input, Stream output, byte[] iv, byte[]? associatedData,
             IProgress<long>? progress, CancellationToken ct)
         {
@@ -536,7 +908,16 @@ namespace QingYi.Core.Crypto
             progress?.Report(plaintext.Length);
         }
 
-        // 处理非GCM模式的异步解密
+        /// <summary>
+        /// Asynchronously decrypts data from the input stream and writes the decrypted data to the output stream using non-GCM cipher modes.
+        /// This method processes data in chunks to support large files without loading the entire file into memory.
+        /// </summary>
+        /// <param name="input">The stream containing the ciphertext data to decrypt.</param>
+        /// <param name="output">The stream to write the decrypted plaintext to.</param>
+        /// <param name="iv">The initialization vector (IV) used for encryption. Must be 16 bytes.</param>
+        /// <param name="progress">Optional progress reporter for tracking decryption progress.</param>
+        /// <param name="ct">A cancellation token to cancel the operation.</param>
+        /// <exception cref="CryptographicException">Thrown when the decryption operation fails.</exception>
         private async Task ProcessNonGcmDecryptionAsync(Stream input, Stream output, byte[] iv,
             IProgress<long>? progress, CancellationToken ct)
         {
@@ -589,7 +970,20 @@ namespace QingYi.Core.Crypto
             }
         }
 
-        // 处理GCM模式的异步解密
+        /// <summary>
+        /// Asynchronously decrypts data from the input stream and writes the decrypted data to the output stream using GCM mode.
+        /// Note that GCM mode does not support true streaming decryption, so the entire input stream is read into memory before decryption.
+        /// This method also verifies the authentication tag for integrity before returning the plaintext.
+        /// This method is not recommended for very large files due to memory constraints.
+        /// </summary>
+        /// <param name="input">The stream containing the ciphertext data to decrypt.</param>
+        /// <param name="output">The stream to write the decrypted plaintext to.</param>
+        /// <param name="iv">The initialization vector (IV) used for encryption. Must be 12 bytes for GCM.</param>
+        /// <param name="tag">The authentication tag for integrity verification. Must be 16 bytes.</param>
+        /// <param name="associatedData">Optional additional data that was authenticated during encryption. This data is not encrypted but is included in the authentication tag calculation.</param>
+        /// <param name="progress">Optional progress reporter for tracking decryption progress.</param>
+        /// <param name="ct">A cancellation token to cancel the operation.</param>
+        /// <exception cref="CryptographicException">Thrown when the authentication tag verification fails or when the decryption operation fails.</exception>
         private async Task ProcessGcmDecryptionAsync(Stream input, Stream output, byte[] iv, byte[] tag, byte[]? associatedData,
             IProgress<long>? progress, CancellationToken ct)
         {
@@ -608,17 +1002,36 @@ namespace QingYi.Core.Crypto
 
         #region 随机数生成
 
+        /// <summary>
+        /// Generates a cryptographically secure random initialization vector (IV) for use with the configured cipher mode.
+        /// The IV is 16 bytes (128 bits) in length for all modes except GCM.
+        /// </summary>
+        /// <returns>A cryptographically secure random IV of 16 bytes.</returns>
         public byte[] GenerateIV()
         {
             return GenerateRandomBytes(AES_IV_SIZE);
         }
 
+        /// <summary>
+        /// Generates a cryptographically secure random nonce for use with the configured cipher mode.
+        /// For GCM mode, this generates a 12-byte nonce, which is the recommended size for GCM.
+        /// For other modes, this generates a 16-byte nonce, equivalent to an IV.
+        /// </summary>
+        /// <returns>A cryptographically secure random nonce (12 bytes for GCM mode, 16 bytes for other modes).</returns>
         public byte[] GenerateNonce()
         {
             // 对于GCM模式，推荐使用12字节的nonce
             return GenerateRandomBytes(_isGcmMode ? 12 : AES_IV_SIZE);
         }
 
+        /// <summary>
+        /// Generates a cryptographically secure random sequence of bytes of the specified length.
+        /// This method uses a cryptographically secure random number generator to ensure the randomness
+        /// is suitable for cryptographic operations.
+        /// </summary>
+        /// <param name="byteCount">The number of random bytes to generate.</param>
+        /// <returns>A cryptographically secure random byte array of the specified length.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when byteCount is negative.</exception>
         public byte[] GenerateRandomBytes(int byteCount)
         {
             byte[] bytes = new byte[byteCount];
@@ -630,6 +1043,19 @@ namespace QingYi.Core.Crypto
 
         #region 业务友好方法
 
+        /// <summary>
+        /// Encrypts the specified plaintext data and prepends a randomly generated initialization vector (IV) to the result.
+        /// For GCM mode, the authentication tag is also appended to the result.
+        /// This method is convenient for scenarios where the IV needs to be stored or transmitted with the ciphertext.
+        /// </summary>
+        /// <param name="plaintext">The plaintext data to encrypt.</param>
+        /// <param name="associatedData">Optional additional data to authenticate in GCM mode. Ignored for non-GCM modes.</param>
+        /// <returns>A byte array containing the IV, ciphertext, and (for GCM mode) the authentication tag.
+        /// For non-GCM modes: IV (16 bytes) + ciphertext.
+        /// For GCM mode: IV (16 bytes) + ciphertext + authentication tag (16 bytes).</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when plaintext is null.</exception>
+        /// <exception cref="CryptographicException">Thrown when the encryption operation fails.</exception>
         public byte[] EncryptWithPrefixIV(byte[] plaintext, byte[]? associatedData = null)
         {
             byte[] iv = GenerateIV();
@@ -669,6 +1095,19 @@ namespace QingYi.Core.Crypto
             }
         }
 
+        /// <summary>
+        /// Decrypts the specified combined data that contains an IV, ciphertext, and (for GCM mode) an authentication tag.
+        /// This method is the counterpart to EncryptWithPrefixIV and is convenient for scenarios where the IV is stored or transmitted with the ciphertext.
+        /// </summary>
+        /// <param name="combinedData">The combined data containing IV, ciphertext, and (for GCM mode) authentication tag.
+        /// For non-GCM modes: IV (16 bytes) + ciphertext.
+        /// For GCM mode: IV (16 bytes) + ciphertext + authentication tag (16 bytes).</param>
+        /// <param name="associatedData">Optional additional data that was authenticated in GCM mode. Ignored for non-GCM modes.</param>
+        /// <returns>The decrypted plaintext data.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when combinedData is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when combinedData has insufficient length for the expected format.</exception>
+        /// <exception cref="CryptographicException">Thrown when the authentication tag verification fails in GCM mode or when the decryption operation fails.</exception>
         public byte[] DecryptWithPrefixIV(byte[] combinedData, byte[]? associatedData = null)
         {
             if (_isGcmMode)
@@ -703,12 +1142,34 @@ namespace QingYi.Core.Crypto
             }
         }
 
+        /// <summary>
+        /// Encrypts the specified plaintext data with a prepended IV and returns the result as a Base64-encoded string.
+        /// This method is convenient for scenarios where the encrypted data needs to be stored or transmitted as a Base64 string.
+        /// </summary>
+        /// <param name="plaintext">The plaintext data to encrypt.</param>
+        /// <param name="associatedData">Optional additional data to authenticate in GCM mode. Ignored for non-GCM modes.</param>
+        /// <returns>A Base64-encoded string containing the IV, ciphertext, and (for GCM mode) the authentication tag.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when plaintext is null.</exception>
+        /// <exception cref="CryptographicException">Thrown when the encryption operation fails.</exception>
         public string EncryptWithPrefixIVToBase64(byte[] plaintext, byte[]? associatedData = null)
         {
             byte[] combined = EncryptWithPrefixIV(plaintext, associatedData);
             return Convert.ToBase64String(combined);
         }
 
+        /// <summary>
+        /// Decrypts a Base64-encoded string containing combined data with a prepended IV and returns the plaintext.
+        /// This method is the counterpart to EncryptWithPrefixIVToBase64 and is convenient for scenarios where the encrypted data is stored or transmitted as a Base64 string.
+        /// </summary>
+        /// <param name="base64Data">A Base64-encoded string containing the IV, ciphertext, and (for GCM mode) authentication tag.</param>
+        /// <param name="associatedData">Optional additional data that was authenticated in GCM mode. Ignored for non-GCM modes.</param>
+        /// <returns>The decrypted plaintext data.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when base64Data is null.</exception>
+        /// <exception cref="FormatException">Thrown when base64Data is not a valid Base64 string.</exception>
+        /// <exception cref="ArgumentException">Thrown when the decoded data has insufficient length for the expected format.</exception>
+        /// <exception cref="CryptographicException">Thrown when the authentication tag verification fails in GCM mode or when the decryption operation fails.</exception>
         public byte[] DecryptWithPrefixIVFromBase64(string base64Data, byte[]? associatedData = null)
         {
             byte[] combined = Convert.FromBase64String(base64Data);
@@ -719,6 +1180,18 @@ namespace QingYi.Core.Crypto
 
         #region 遗留方法
 
+        /// <summary>
+        /// Encrypts the specified plaintext data using ECB mode without requiring an initialization vector (IV).
+        /// This method is marked as obsolete because ECB mode is insecure and should not be used for new applications.
+        /// It is provided only for legacy compatibility with existing systems that require ECB mode.
+        /// ECB mode does not use an IV, so identical plaintext blocks produce identical ciphertext blocks,
+        /// which can leak information about the plaintext structure.
+        /// </summary>
+        /// <param name="plaintext">The plaintext data to encrypt.</param>
+        /// <returns>The encrypted ciphertext data.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when plaintext is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when this method is called in a mode other than ECB.</exception>
         [Obsolete("ECB mode is insecure. Use only for legacy compatibility.")]
         public byte[] EncryptWithoutIV_ECB(byte[] plaintext)
         {
@@ -728,6 +1201,18 @@ namespace QingYi.Core.Crypto
             return Encrypt(plaintext, new byte[AES_IV_SIZE]); // 使用全零IV
         }
 
+        /// <summary>
+        /// Decrypts the specified ciphertext data using ECB mode without requiring an initialization vector (IV).
+        /// This method is marked as obsolete because ECB mode is insecure and should not be used for new applications.
+        /// It is provided only for legacy compatibility with existing systems that require ECB mode.
+        /// ECB mode does not use an IV, so identical plaintext blocks produce identical ciphertext blocks,
+        /// which can leak information about the plaintext structure.
+        /// </summary>
+        /// <param name="ciphertext">The ciphertext data to decrypt.</param>
+        /// <returns>The decrypted plaintext data.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when ciphertext is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when this method is called in a mode other than ECB.</exception>
         [Obsolete("ECB mode is insecure. Use only for legacy compatibility.")]
         public byte[] DecryptWithoutIV_ECB(byte[] ciphertext)
         {
@@ -741,6 +1226,13 @@ namespace QingYi.Core.Crypto
 
         #region 辅助方法
 
+        /// <summary>
+        /// Converts a hexadecimal string to a byte array.
+        /// This method is useful for converting hexadecimal-encoded data to its binary representation.
+        /// </summary>
+        /// <param name="hex">The hexadecimal string to convert. Must have an even length.</param>
+        /// <returns>A byte array representing the hexadecimal string.</returns>
+        /// <exception cref="ArgumentException">Thrown when the hexadecimal string has an odd length or contains invalid characters.</exception>
         private static byte[] HexStringToBytes(string hex)
         {
             if (hex.Length % 2 != 0)
@@ -754,11 +1246,24 @@ namespace QingYi.Core.Crypto
             return bytes;
         }
 
+        /// <summary>
+        /// Converts a byte array to a lowercase hexadecimal string.
+        /// This method is useful for converting binary data to a hexadecimal representation for storage or transmission.
+        /// </summary>
+        /// <param name="bytes">The byte array to convert.</param>
+        /// <returns>A lowercase hexadecimal string representing the byte array.</returns>
         private static string BytesToHexString(byte[] bytes)
         {
             return Convert.ToHexString(bytes).ToLowerInvariant();
         }
 
+        /// <summary>
+        /// Validates that the specified key is a valid AES key.
+        /// AES supports key sizes of 128, 192, or 256 bits (16, 24, or 32 bytes).
+        /// </summary>
+        /// <param name="key">The key to validate.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the key is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the key length is not 16, 24, or 32 bytes.</exception>
         private static void ValidateKey(byte[] key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
@@ -766,6 +1271,13 @@ namespace QingYi.Core.Crypto
                 throw new ArgumentException("AES key must be 128, 192, or 256 bits (16, 24, or 32 bytes)");
         }
 
+        /// <summary>
+        /// Validates that the specified cipher mode and padding mode are compatible.
+        /// This method ensures that the combination of cipher mode and padding mode is valid.
+        /// </summary>
+        /// <param name="mode">The cipher mode to validate.</param>
+        /// <param name="padding">The padding mode to validate.</param>
+        /// <exception cref="ArgumentException">Thrown when the cipher mode or padding mode is invalid, or when the combination is not supported.</exception>
         private static void ValidateModeAndPadding(ExtendedCipherMode mode, PaddingMode padding)
         {
             if (!Enum.IsDefined(typeof(ExtendedCipherMode), mode))
@@ -779,12 +1291,23 @@ namespace QingYi.Core.Crypto
                 throw new ArgumentException("GCM mode only supports PaddingMode.None");
         }
 
+        /// <summary>
+        /// Validates that the specified initialization vector (IV) has the correct length for AES.
+        /// AES requires an IV of 16 bytes (128 bits).
+        /// </summary>
+        /// <param name="iv">The initialization vector (IV) to validate.</param>
+        /// <exception cref="ArgumentException">Thrown when the IV is not 16 bytes in length.</exception>
         private void ValidateIV(ReadOnlySpan<byte> iv)
         {
             if (iv.Length != AES_IV_SIZE)
                 throw new ArgumentException($"IV must be {AES_IV_SIZE} bytes for AES");
         }
 
+        /// <summary>
+        /// Throws an ObjectDisposedException if this instance has been disposed.
+        /// This method is marked as aggressive inline for performance optimization.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">Thrown when this instance has been disposed.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThrowIfDisposed()
         {
@@ -796,6 +1319,11 @@ namespace QingYi.Core.Crypto
 
         #region 清理和资源释放
 
+        /// <summary>
+        /// Releases all resources used by the current instance of the AesCrypto class.
+        /// This method clears the cryptographic key from memory and disposes of the underlying cryptographic providers.
+        /// After calling this method, the instance cannot be used for further cryptographic operations.
+        /// </summary>
         public void Dispose()
         {
             if (_disposed) return;
@@ -809,6 +1337,11 @@ namespace QingYi.Core.Crypto
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Clears the cryptographic key from memory by overwriting it with zeros.
+        /// This method uses unsafe code to ensure the key is securely removed from memory.
+        /// After calling this method, the key cannot be recovered and the instance cannot be used for further cryptographic operations.
+        /// </summary>
         public void ClearKey()
         {
             if (_key != null)
@@ -825,6 +1358,13 @@ namespace QingYi.Core.Crypto
             }
         }
 
+        /// <summary>
+        /// Finalizer for the AesCrypto class.
+        /// This method is called by the garbage collector to ensure resources are released
+        /// when the instance is not properly disposed.
+        /// It is recommended to call Dispose explicitly when finished with the instance
+        /// rather than relying on the finalizer.
+        /// </summary>
         ~AesCrypto()
         {
             Dispose();
