@@ -1,14 +1,14 @@
-﻿using System;
+﻿using QingYi.Core.Interfaces;
+using System;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 
 namespace QingYi.Core.Compression
 {
     /// <summary>
     /// Provides DEFLATE compression and decompression functionality
     /// </summary>
-    public class Deflate
+    public class Deflate : ICompression
     {
         /// <summary>
         /// Compresses input data using DEFLATE algorithm
@@ -18,7 +18,7 @@ namespace QingYi.Core.Compression
         /// Compressed byte array.
         /// Returns empty array if input is null or empty.
         /// </returns>
-        public static byte[] Compress(byte[] data)
+        public byte[] Compress(byte[] data)
         {
             // 如果输入为空数组，直接返回空数组
             if (data == null || data.Length == 0)
@@ -55,7 +55,7 @@ namespace QingYi.Core.Compression
         /// <item>Returned stream position is set to 0 for immediate reading</item>
         /// </list>
         /// </remarks>
-        public static void Compress(byte[] data, out MemoryStream memoryStream)
+        public void Compress(byte[] data, out MemoryStream memoryStream)
         {
             // 如果输入为空，直接返回Null
             if (data == null || data.Length == 0)
@@ -83,7 +83,7 @@ namespace QingYi.Core.Compression
         /// Decompressed byte array.
         /// Returns empty array if input is null or empty.
         /// </returns>
-        public static byte[] Decompress(byte[] compressedData)
+        public byte[] Decompress(byte[] compressedData)
         {
             if (compressedData == null || compressedData.Length == 0)
 #if NET45 || NET451 || NET452
@@ -114,7 +114,7 @@ namespace QingYi.Core.Compression
         /// <item>Returned stream position is set to 0 for immediate reading</item>
         /// </list>
         /// </remarks>
-        public static void Decompress(byte[] compressedData, out MemoryStream memoryStream)
+        public void Decompress(byte[] compressedData, out MemoryStream memoryStream)
         {
             if (compressedData == null || compressedData.Length == 0)
                 memoryStream = (MemoryStream)Stream.Null;
