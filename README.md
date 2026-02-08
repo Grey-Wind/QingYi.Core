@@ -1,6 +1,6 @@
 # QingYi.Core
 
-![GitHub commit activity](https://img.shields.io/github/commit-activity/w/QingYi-Studio/QingYi.Core?link=https%3A%2F%2Fgithub.com%2FQingYi-Studio%2FQingYi.Core)<!-- ![GitHub commits since latest release](https://img.shields.io/github/commits-since/QingYi-Studio/QingYi.Core/latest?include_prereleases&link=https%3A%2F%2Fgithub.com%2FTYLDDB%2FTYLDDB-CSharp%2Freleases) -->
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/QingYi-Studio/QingYi.Core?link=https%3A%2F%2Fgithub.com%2FQingYi-Studio%2FQingYi.Core)`<!-- ![GitHub commits since latest release](https://img.shields.io/github/commits-since/QingYi-Studio/QingYi.Core/latest?include_prereleases&link=https%3A%2F%2Fgithub.com%2FTYLDDB%2FTYLDDB-CSharp%2Freleases) -->`
 ![GitHub contributors](https://img.shields.io/github/contributors-anon/QingYi-Studio/QingYi.Core)
 ![GitHub Release Date](https://img.shields.io/github/release-date-pre/QingYi-Studio/QingYi.Core)
 ![GitHub Release](https://img.shields.io/github/v/release/QingYi-Studio/QingYi.Core)
@@ -32,10 +32,10 @@ NuGet\Install-Package QingYi.Core
 
 Package Reference
 
-Need specific the verison, 5.1.1 is the latest release version.
+Need specific the verison, 6.0.0 is the latest release version.
 
 ```xml
-<PackageReference Include="QingYi.Core" Version="5.1.1" />
+<PackageReference Include="QingYi.Core" Version="6.0.0" />
 ```
 
 ## Feedback
