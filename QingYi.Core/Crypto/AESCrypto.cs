@@ -1,4 +1,4 @@
-﻿#if !BROWSER
+#if !BROWSER
 using QingYi.Core.Interfaces;
 using System;
 using System.Buffers;
