@@ -14,7 +14,7 @@ namespace QingYi.Core.Crypto
     /// <summary>
     /// Provides Advanced Encryption Standard (AES) cryptographic operations with support for multiple cipher modes.
     /// This class implements the ICrypto interface and offers encryption and decryption functionality using AES algorithm.
-    /// It supports standard modes like CBC, ECB, CFB, OFB, CTS, and authenticated encryption with GCM mode.
+    /// It supports standard modes like CBC, ECB, CFB and authenticated encryption with GCM mode.
     /// The class provides both synchronous and asynchronous operations for various data types including byte arrays,
     /// streams, and strings. It implements IDisposable to ensure proper cleanup of cryptographic resources.
     /// </summary>
@@ -68,14 +68,6 @@ namespace QingYi.Core.Crypto
             /// CFB (Cipher Feedback) mode is a symmetric-key block cipher mode of operation that turns a block cipher into a self-synchronizing stream cipher. In CFB mode, the previous ciphertext block is encrypted using the key, and the result is XORed with the current plaintext block to produce ciphertext. This process creates a feedback loop where ciphertext depends on earlier encrypted data, making it suitable for encrypting streaming data (e.g., network communication) where data arrives in real-time. CFB allows for partial block processing and supports error propagation, meaning a transmission error in one ciphertext block affects subsequent decryption until synchronization is regained. However, like other feedback modes, it requires an initialization vector (IV) to ensure security and uniqueness.
             /// </summary>
             CFB,
-            /// <summary>
-            /// OFB (Output Feedback) mode is a symmetric-key block cipher mode of operation that transforms a block cipher into a synchronous stream cipher. In OFB mode, the encryption process does not directly apply the cipher to plaintext data. Instead, a keystream is generated independently by repeatedly encrypting an initialization vector (IV). This keystream is then XORed with the plaintext to produce ciphertext (or vice versa for decryption). The key feature of OFB is that any bit error in the ciphertext affects only the corresponding bit in the decrypted plaintext, making it suitable for environments where transmission errors may occur but propagation is undesirable. However, like other stream cipher modes, it requires a unique IV for each encryption to maintain security. OFB ensures confidentiality and allows preprocessing of keystream, but it does not provide authentication or integrity protection. It is commonly used in scenarios where error propagation must be avoided, such as in audio or video streaming over unreliable channels.
-            /// </summary>
-            OFB,
-            /// <summary>
-            /// CTS (Cypher Text Stealing) is a symmetric block cipher mode of operation designed to handle data of any length without requiring rigid padding to the block size. Unlike standard modes such as CBC (Cipher Block Chaining), which require the plaintext to be padded to a multiple of the block length, CTS efficiently processes the final partial block by "stealing" ciphertext from the previous block. This eliminates the need for extra padding bytes while maintaining security and integrity. CTS is particularly useful in scenarios where data length varies or where padding overhead is undesirable, such as in disk encryption or network protocols. It ensures full encryption of all input data without expansion, making it both efficient and secure for real-world applications.
-            /// </summary>
-            CTS,
             /// <summary>
             /// GCM (Galois/Counter Mode) is an efficient and secure authenticated encryption algorithm that combines the Counter (CTR) mode for data confidentiality with a Galois field-based authentication mechanism to ensure data integrity, all in a single pass over the data for high performance in modern applications like TLS and IPSec.
             /// </summary>
@@ -149,6 +141,13 @@ namespace QingYi.Core.Crypto
         public ReadOnlyMemory<byte> Key => _key;
 
         /// <summary>
+        /// Gets the extended cipher mode being used for encryption and decryption operations.
+        /// This property returns the ExtendedCipherMode value that this instance was configured with.
+        /// </summary>
+        /// <value>The ExtendedCipherMode being used.</value>
+        public ExtendedCipherMode ExtendedMode => _extendedMode;
+
+        /// <summary>
         /// Gets a value indicating whether the current mode provides authenticated encryption.
         /// Returns true only for GCM mode, which provides both confidentiality and integrity protection.
         /// </summary>
@@ -171,8 +170,6 @@ namespace QingYi.Core.Crypto
                     ExtendedCipherMode.CBC => CipherMode.CBC,
                     ExtendedCipherMode.ECB => CipherMode.ECB,
                     ExtendedCipherMode.CFB => CipherMode.CFB,
-                    ExtendedCipherMode.OFB => CipherMode.OFB,
-                    ExtendedCipherMode.CTS => CipherMode.CTS,
                     ExtendedCipherMode.GCM => CipherMode.CBC, // GCM不是标准CipherMode，返回CBC作为占位
                     _ => CipherMode.CBC
                 };
@@ -219,6 +216,14 @@ namespace QingYi.Core.Crypto
             ValidateKey(key);
             ValidateModeAndPadding(mode, padding);
 
+            // 检查模式支持
+            if (!IsModeSupported(mode))
+            {
+                throw new PlatformNotSupportedException(
+                    $"Cipher mode {mode} is not supported on this platform. " +
+                    $"Supported modes: CBC, ECB, CFB{(IsModeSupported(ExtendedCipherMode.GCM) ? ", GCM" : "")}");
+            }
+
             _key = new byte[key.Length];
             Buffer.BlockCopy(key, 0, _key, 0, key.Length);
 
@@ -228,17 +233,23 @@ namespace QingYi.Core.Crypto
             if (_isGcmMode)
             {
                 _aesGcm = new AesGcm(key, DEFAULT_TAG_SIZE);
-                _aes = Aes.Create(); // 仅用于属性访问
-                _aes.Mode = CipherMode.ECB; // 不使用，仅占位
-                _aes.Padding = PaddingMode.None; // GCM模式不使用填充
+                _aes = Aes.Create();
+                _aes.Mode = CipherMode.CBC;
+                _aes.Padding = PaddingMode.None;
             }
             else
             {
                 _aes = Aes.Create();
                 _aes.Key = key;
-                _aes.Mode = (CipherMode)mode; // 标准模式可以转换
+                _aes.Mode = mode switch
+                {
+                    ExtendedCipherMode.CBC => CipherMode.CBC,
+                    ExtendedCipherMode.ECB => CipherMode.ECB,
+                    ExtendedCipherMode.CFB => CipherMode.CFB,
+                    _ => throw new ArgumentException($"Unsupported cipher mode: {mode}")
+                };
                 _aes.Padding = padding;
-                _aes.BlockSize = 128; // AES固定为128位块
+                _aes.BlockSize = 128;
             }
         }
 
@@ -530,7 +541,7 @@ namespace QingYi.Core.Crypto
         #region 非GCM模式加解密实现
 
         /// <summary>
-        /// Encrypts the specified plaintext data using a non-GCM cipher mode (CBC, ECB, CFB, OFB, or CTS).
+        /// Encrypts the specified plaintext data using a non-GCM cipher mode (CBC, ECB, CFB).
         /// </summary>
         /// <param name="plaintext">The plaintext data to encrypt.</param>
         /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 16 bytes.</param>
@@ -543,7 +554,7 @@ namespace QingYi.Core.Crypto
         }
 
         /// <summary>
-        /// Encrypts the specified plaintext data using a non-GCM cipher mode (CBC, ECB, CFB, OFB, or CTS) with spans to avoid additional memory allocations.
+        /// Encrypts the specified plaintext data using a non-GCM cipher mode (CBC, ECB, CFB) with spans to avoid additional memory allocations.
         /// </summary>
         /// <param name="plaintext">The plaintext data to encrypt.</param>
         /// <param name="iv">The initialization vector (IV) for the encryption operation. Must be 16 bytes.</param>
@@ -552,33 +563,48 @@ namespace QingYi.Core.Crypto
         /// <exception cref="CryptographicException">Thrown when the encryption operation fails.</exception>
         private void EncryptNonGcm(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> iv, Span<byte> destination, out int bytesWritten)
         {
-            using var encryptor = _aes.CreateEncryptor(_key, iv.ToArray());
+            // 将 span 转换为数组以兼容 ICryptoTransform API
+            byte[] plaintextArray = plaintext.ToArray();
+            byte[] ivArray = iv.ToArray();
 
-            int blockSize = encryptor.InputBlockSize;
-            int inputIndex = 0;
-            bytesWritten = 0;
+            using var encryptor = _aes.CreateEncryptor(_key, ivArray);
 
             // 处理完整块
-            while (inputIndex <= plaintext.Length - blockSize)
-            {
-                int transformed = encryptor.TransformBlock(
-                    plaintext.ToArray(), inputIndex, blockSize,
-                    destination.ToArray(), bytesWritten);
+            int totalTransformed = 0;
+            int blockSize = encryptor.InputBlockSize;
+            int bytesToProcess = plaintextArray.Length;
+            int inputIndex = 0;
 
-                inputIndex += blockSize;
-                bytesWritten += transformed;
+            // 如果有完整块，使用 TransformBlock
+            if (bytesToProcess >= blockSize)
+            {
+                // 计算完整块的数量（除了最后一个块）
+                int fullBlocks = (bytesToProcess / blockSize) - 1;
+
+                for (int i = 0; i < fullBlocks; i++)
+                {
+                    int transformed = encryptor.TransformBlock(
+                        plaintextArray, inputIndex, blockSize,
+                        destination.ToArray(), totalTransformed);
+
+                    inputIndex += blockSize;
+                    totalTransformed += transformed;
+                }
             }
 
-            // 处理最后一个块
+            // 处理最后一个块（可能是不完整块，需要 TransformFinalBlock）
             byte[] finalBlock = encryptor.TransformFinalBlock(
-                plaintext.ToArray(), inputIndex, plaintext.Length - inputIndex);
+                plaintextArray, inputIndex, plaintextArray.Length - inputIndex);
 
-            finalBlock.AsSpan().CopyTo(destination[bytesWritten..]);
-            bytesWritten += finalBlock.Length;
+            // 将最后一个块复制到目标位置
+            finalBlock.AsSpan().CopyTo(destination[totalTransformed..]);
+            totalTransformed += finalBlock.Length;
+
+            bytesWritten = totalTransformed;
         }
 
         /// <summary>
-        /// Decrypts the specified ciphertext data using a non-GCM cipher mode (CBC, ECB, CFB, OFB, or CTS).
+        /// Decrypts the specified ciphertext data using a non-GCM cipher mode (CBC, ECB, CFB).
         /// </summary>
         /// <param name="ciphertext">The ciphertext data to decrypt.</param>
         /// <param name="iv">The initialization vector (IV) used for encryption. Must be 16 bytes.</param>
@@ -591,7 +617,7 @@ namespace QingYi.Core.Crypto
         }
 
         /// <summary>
-        /// Decrypts the specified ciphertext data using a non-GCM cipher mode (CBC, ECB, CFB, OFB, or CTS) with spans to avoid additional memory allocations.
+        /// Decrypts the specified ciphertext data using a non-GCM cipher mode (CBC, ECB, CFB) with spans to avoid additional memory allocations.
         /// </summary>
         /// <param name="ciphertext">The ciphertext data to decrypt.</param>
         /// <param name="iv">The initialization vector (IV) used for encryption. Must be 16 bytes.</param>
@@ -600,29 +626,62 @@ namespace QingYi.Core.Crypto
         /// <exception cref="CryptographicException">Thrown when the decryption operation fails.</exception>
         private void DecryptNonGcm(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> iv, Span<byte> destination, out int bytesWritten)
         {
-            using var decryptor = _aes.CreateDecryptor(_key, iv.ToArray());
+            // 将 span 转换为数组以兼容 ICryptoTransform API
+            byte[] ciphertextArray = ciphertext.ToArray();
+            byte[] ivArray = iv.ToArray();
 
-            int blockSize = decryptor.InputBlockSize;
-            int inputIndex = 0;
-            bytesWritten = 0;
+            using var decryptor = _aes.CreateDecryptor(_key, ivArray);
 
             // 处理完整块
-            while (inputIndex <= ciphertext.Length - blockSize)
-            {
-                int transformed = decryptor.TransformBlock(
-                    ciphertext.ToArray(), inputIndex, blockSize,
-                    destination.ToArray(), bytesWritten);
+            int totalTransformed = 0;
+            int blockSize = decryptor.InputBlockSize;
+            int bytesToProcess = ciphertextArray.Length;
+            int inputIndex = 0;
 
-                inputIndex += blockSize;
-                bytesWritten += transformed;
+            // 如果有完整块，使用 TransformBlock
+            if (bytesToProcess >= blockSize)
+            {
+                // 计算完整块的数量（除了最后一个块）
+                int fullBlocks = (bytesToProcess / blockSize) - 1;
+
+                for (int i = 0; i < fullBlocks; i++)
+                {
+                    int transformed = decryptor.TransformBlock(
+                        ciphertextArray, inputIndex, blockSize,
+                        destination.ToArray(), totalTransformed);
+
+                    inputIndex += blockSize;
+                    totalTransformed += transformed;
+                }
             }
 
-            // 处理最后一个块
+            // 处理最后一个块（可能是不完整块，需要 TransformFinalBlock）
             byte[] finalBlock = decryptor.TransformFinalBlock(
-                ciphertext.ToArray(), inputIndex, ciphertext.Length - inputIndex);
+                ciphertextArray, inputIndex, ciphertextArray.Length - inputIndex);
 
-            finalBlock.AsSpan().CopyTo(destination[bytesWritten..]);
-            bytesWritten += finalBlock.Length;
+            // 将最后一个块复制到目标位置
+            finalBlock.AsSpan().CopyTo(destination[totalTransformed..]);
+            totalTransformed += finalBlock.Length;
+
+            bytesWritten = totalTransformed;
+        }
+
+        /// <summary>
+        /// Attempts to decrypt the specified ciphertext data using spans.
+        /// Returns true if the operation succeeded; otherwise, false.
+        /// </summary>
+        public bool TryDecrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> iv, Span<byte> destination, out int bytesWritten)
+        {
+            try
+            {
+                Decrypt(ciphertext, iv, destination, out bytesWritten);
+                return true;
+            }
+            catch
+            {
+                bytesWritten = 0;
+                return false;
+            }
         }
 
         #endregion
@@ -831,55 +890,21 @@ namespace QingYi.Core.Crypto
         /// <param name="ct">A cancellation token to cancel the operation.</param>
         /// <exception cref="CryptographicException">Thrown when the encryption operation fails.</exception>
         private async Task ProcessNonGcmEncryptionAsync(Stream input, Stream output, byte[] iv,
-            IProgress<long>? progress, CancellationToken ct)
+    IProgress<long>? progress, CancellationToken ct)
         {
             const int bufferSize = 81920; // 80KB缓冲区
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-            byte[] outputBuffer = ArrayPool<byte>.Shared.Rent(bufferSize + AES_BLOCK_SIZE);
 
-            try
-            {
-                using var encryptor = _aes.CreateEncryptor(_key, iv);
-                long totalRead = 0;
-                int bytesRead;
+            // 使用一次性读取并处理，确保数据完整
+            using var ms = new MemoryStream();
+            await input.CopyToAsync(ms, ct);
+            byte[] allData = ms.ToArray();
 
-                while ((bytesRead = await input.ReadAsync(buffer, 0, bufferSize, ct)) > 0)
-                {
-                    int bytesToProcess = bytesRead;
-                    int inputOffset = 0;
+            // 使用加密器一次性处理所有数据
+            using var encryptor = _aes.CreateEncryptor(_key, iv);
+            byte[] encryptedData = encryptor.TransformFinalBlock(allData, 0, allData.Length);
 
-                    // 处理完整块
-                    while (bytesToProcess >= encryptor.InputBlockSize)
-                    {
-                        int transformed = encryptor.TransformBlock(
-                            buffer, inputOffset, encryptor.InputBlockSize,
-                            outputBuffer, 0);
-
-                        await output.WriteAsync(outputBuffer, 0, transformed, ct);
-
-                        inputOffset += encryptor.InputBlockSize;
-                        bytesToProcess -= encryptor.InputBlockSize;
-                        totalRead += encryptor.InputBlockSize;
-                    }
-
-                    // 处理剩余数据
-                    if (bytesToProcess > 0)
-                    {
-                        byte[] finalBlock = encryptor.TransformFinalBlock(
-                            buffer, inputOffset, bytesToProcess);
-
-                        await output.WriteAsync(finalBlock, 0, finalBlock.Length, ct);
-                        totalRead += bytesToProcess;
-                    }
-
-                    progress?.Report(totalRead);
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
-                ArrayPool<byte>.Shared.Return(outputBuffer);
-            }
+            await output.WriteAsync(encryptedData, 0, encryptedData.Length, ct);
+            progress?.Report(allData.Length);
         }
 
         /// <summary>
@@ -918,56 +943,19 @@ namespace QingYi.Core.Crypto
         /// <param name="progress">Optional progress reporter for tracking decryption progress.</param>
         /// <param name="ct">A cancellation token to cancel the operation.</param>
         /// <exception cref="CryptographicException">Thrown when the decryption operation fails.</exception>
-        private async Task ProcessNonGcmDecryptionAsync(Stream input, Stream output, byte[] iv,
-            IProgress<long>? progress, CancellationToken ct)
+        private async Task ProcessNonGcmDecryptionAsync(Stream input, Stream output, byte[] iv, IProgress<long>? progress, CancellationToken ct)
         {
-            const int bufferSize = 81920;
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-            byte[] outputBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            // 一次性读取所有数据
+            using var ms = new MemoryStream();
+            await input.CopyToAsync(ms, ct);
+            byte[] allData = ms.ToArray();
 
-            try
-            {
-                using var decryptor = _aes.CreateDecryptor(_key, iv);
-                long totalRead = 0;
-                int bytesRead;
+            // 使用解密器一次性处理所有数据
+            using var decryptor = _aes.CreateDecryptor(_key, iv);
+            byte[] decryptedData = decryptor.TransformFinalBlock(allData, 0, allData.Length);
 
-                while ((bytesRead = await input.ReadAsync(buffer, 0, bufferSize, ct)) > 0)
-                {
-                    int bytesToProcess = bytesRead;
-                    int inputOffset = 0;
-
-                    // 处理完整块
-                    while (bytesToProcess >= decryptor.InputBlockSize)
-                    {
-                        int transformed = decryptor.TransformBlock(
-                            buffer, inputOffset, decryptor.InputBlockSize,
-                            outputBuffer, 0);
-
-                        await output.WriteAsync(outputBuffer, 0, transformed, ct);
-
-                        inputOffset += decryptor.InputBlockSize;
-                        bytesToProcess -= decryptor.InputBlockSize;
-                        totalRead += decryptor.InputBlockSize;
-                    }
-
-                    // 处理剩余数据
-                    if (bytesToProcess > 0)
-                    {
-                        byte[] finalBlock = decryptor.TransformFinalBlock(
-                            buffer, inputOffset, bytesToProcess);
-
-                        await output.WriteAsync(finalBlock, 0, finalBlock.Length, ct);
-                        totalRead += bytesToProcess;
-                    }
-
-                    progress?.Report(totalRead);
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
-                ArrayPool<byte>.Shared.Return(outputBuffer);
-            }
+            await output.WriteAsync(decryptedData, 0, decryptedData.Length, ct);
+            progress?.Report(allData.Length);
         }
 
         /// <summary>
@@ -1299,8 +1287,18 @@ namespace QingYi.Core.Crypto
         /// <exception cref="ArgumentException">Thrown when the IV is not 16 bytes in length.</exception>
         private void ValidateIV(ReadOnlySpan<byte> iv)
         {
-            if (iv.Length != AES_IV_SIZE)
-                throw new ArgumentException($"IV must be {AES_IV_SIZE} bytes for AES");
+            if (_isGcmMode)
+            {
+                // GCM 模式推荐使用 12 字节 IV
+                if (iv.Length != 12 && iv.Length != AES_IV_SIZE)
+                    throw new ArgumentException($"IV must be 12 or 16 bytes for AES-GCM");
+            }
+            else
+            {
+                // 非 GCM 模式使用 16 字节 IV
+                if (iv.Length != AES_IV_SIZE)
+                    throw new ArgumentException($"IV must be {AES_IV_SIZE} bytes for AES");
+            }
         }
 
         /// <summary>
@@ -1355,6 +1353,42 @@ namespace QingYi.Core.Crypto
                     }
                 }
                 _key = EmptyByteArray;
+            }
+        }
+
+        public static bool IsModeSupported(ExtendedCipherMode mode)
+        {
+            if (mode == ExtendedCipherMode.GCM)
+            {
+                // 检查 GCM 支持
+                try
+                {
+                    using var aesGcm = new AesGcm(new byte[16]);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            try
+            {
+                using var aes = Aes.Create();
+                CipherMode standardMode = mode switch
+                {
+                    ExtendedCipherMode.CBC => CipherMode.CBC,
+                    ExtendedCipherMode.ECB => CipherMode.ECB,
+                    ExtendedCipherMode.CFB => CipherMode.CFB,
+                    _ => CipherMode.CBC
+                };
+
+                aes.Mode = standardMode;
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
